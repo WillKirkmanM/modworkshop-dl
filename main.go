@@ -8,7 +8,9 @@ package main
 import (
 	"fmt"
 	"os"
-	"time"
+
+	"strings"
+	//"time"
 
 	"github.com/gocolly/colly"
 )
@@ -27,16 +29,14 @@ func main() {
 		title := r.ChildText("[id=title]")
 		downloadButtonText := r.ChildAttr("[id=download-button]", "href")
 		downloadLink := "https://" + baseURL + downloadButtonText
-		modSize := r.ChildAttr("[id=download-button]", "style.font-size=13px")
 
-		if downloadLink == "https://modworkshop.net" {
-			downloadLink = "No Download Link Found, Check the GitHub Page of that mod."
-			os.Exit(0)
-		}
+		downloadID := strings.Split(downloadButtonText, "/download/")[1]
+		fmt.Println(downloadID)
+
+		fmt.Println(downloadButtonText)
 
 		fmt.Println("Title:", title)
 		fmt.Println("Download Link:", downloadLink)
-		fmt.Println("ModSize:", modSize)
 
 		fmt.Println("Would you like to download this mod? (Y/n)")
 
@@ -44,7 +44,7 @@ func main() {
 		fmt.Scan(&answer)
 
 		if answer == "Y" || answer == "y" {
-			downloadFile("./temp", downloadLink)
+			os.Exit(0)
 		} else {
 			fmt.Println("Alright, Exiting Process...")
 			os.Exit(0)
@@ -55,40 +55,4 @@ func main() {
 
 	// OneShot Mod
 	c.Visit("https://modworkshop.net/mod/40265")
-}
-
-func downloadFile(filePath string, url string) (err error) {
-	client := grab.NewClient()
-	req, _ := grab.NewRequest(filePath, url)
-
-	// start download
-	fmt.Printf("Downloading %v...\n", req.URL())
-	resp := client.Do(req)
-	fmt.Printf("  %v\n", resp.HTTPResponse.Status)
-
-	// start UI loop
-	t := time.NewTicker(100 * time.Millisecond)
-	defer t.Stop()
-
-Loop:
-	for {
-		select {
-		case <-t.C:
-			fmt.Printf("  transferred %v / %v bytes (%.2f%%)\n",
-				resp.BytesComplete(),
-				resp.Size(),
-				100*resp.Progress())
-
-		case <-resp.Done:
-			if err := resp.Err(); err != nil {
-				fmt.Fprintf(os.Stderr, "Download failed: %v\n", err)
-				os.Exit(1)
-			}
-			break Loop
-		}
-	}
-
-	fmt.Printf("Download saved to ./%v \n", resp.Filename)
-
-	return nil
 }
