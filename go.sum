@@ -8,6 +8,10 @@ github.com/antchfx/xmlquery v1.3.14 h1:JVLQF1UIstQytN6MVES7D8gCiqIazZA+A2NWryaHw
 github.com/antchfx/xmlquery v1.3.14/go.mod h1:yPRBXRdd2Xqz9c2Z61qvMKbK+u3NXXydp6nqEfw4VdI=
 github.com/antchfx/xpath v1.2.2 h1:fsKX4sHfxhsGpDMYjsvCmGC0EGdiT7XA0af/6PP6Oa0=
 github.com/antchfx/xpath v1.2.2/go.mod h1:i54GszH55fYfBmoZXapTHN8T8tkcHfRgLyVwwqzXNcs=
+github.com/cavaliercoder/grab v3.0.1+incompatible h1:JHkLdLRMRF+WAxj22uB1PjBZUs2iJ8nmmpE1qZL2x1E=
+github.com/cavaliercoder/grab v3.0.1+incompatible/go.mod h1:tTBkfNqSBfuMmMBFaO2phgyhdYhiZQ/+iXCZDzcDsMI=
+github.com/cavaliergopher/grab/v3 v3.0.1 h1:4z7TkBfmPjmLAAmkkAZNX/6QJ1nNFdv3SdIHXju0Fr4=
+github.com/cavaliergopher/grab/v3 v3.0.1/go.mod h1:1U/KNnD+Ft6JJiYoYBAimKH2XrYptb8Kl3DFGmsjpq4=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/gobwas/glob v0.2.3 h1:A4xDbljILXROh+kObIiy5kIaPYD8e96x1tgBhUI5J+Y=

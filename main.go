@@ -8,11 +8,13 @@ package main
 import (
 	"fmt"
 	"os"
-
 	"strings"
-	//"time"
+	"io"
+	"archive/zip"
+	"path/filepath"
 
 	"github.com/gocolly/colly"
+	"github.com/cavaliergopher/grab/v3"
 )
 
 // Thanks (https://twin.sh/articles/35/how-to-add-colors-to-your-console-terminal-output-in-go)
@@ -39,11 +41,13 @@ func main() {
 	c.OnHTML("div.flex-grow-1.p-3.d-flex.flex-column.data", func(r *colly.HTMLElement) {
 		title := r.ChildText("[id=title]")
 		downloadButtonText := r.ChildAttr("[id=download-button]", "href")
+		if !strings.Contains(downloadButtonText, "download") {
+			panic("The Mod You have Requested is Invalid / Does not Have a Download Link. Check the GitHub Page of the Mod!")
+		}
 
 		downloadID := strings.Split(downloadButtonText, "/download/")[1]
-		fmt.Println(downloadID)
 
-		fmt.Printf("%sFound Mod: %s\n", Green, title)
+		fmt.Printf("%sFound Mod%s: %s%s%s\n", Green, White, Yellow, title, White)
 		fmt.Printf("Size N/A\n")
 		// TODO: Get Size of Mod
 
@@ -54,10 +58,9 @@ func main() {
 		fmt.Scan(&answer)
 
 		if answer == "Y" || answer == "y" {
-			fmt.Println(White)
+			downloadMod(downloadID)
 			os.Exit(0)
 		} else {
-			fmt.Println(White)
 			fmt.Println("Alright, Exiting Process...")
 			os.Exit(0)
 		}
@@ -67,4 +70,78 @@ func main() {
 
 	// OneShot Mod
 	c.Visit("https://modworkshop.net/mod/40265")
+}
+
+// Thanks: https://www.sohamkamani.com/golang/exec-shell-command/
+// Dont want to use Dependency but Thank: https://golangdocs.com/golang-download-files
+func downloadMod(downloadID string) {
+	downloadLink := apiURL + downloadID + "/download?"
+	resp, err := grab.Get(".", downloadLink)
+
+	if err != nil {
+		panic(err)
+	}
+	
+	fmt.Println("Download Saved To: ", resp.Filename)
+	unzipSource(resp.Filename, ".")
+	os.Remove(resp.Filename)
+}
+
+
+// Thanks: https://gosamples.dev/unzip-file/
+func unzipSource(source, destination string) error {
+	reader, err := zip.OpenReader(source)
+	if err != nil {
+			return err
+	}
+	defer reader.Close()
+
+	destination, err = filepath.Abs(destination)
+	if err != nil {
+			return err
+	}
+
+	for _, f := range reader.File {
+			err := unzipFile(f, destination)
+			if err != nil {
+					return err
+			}
+	}
+	os.Remove(source)
+	return nil
+}
+
+func unzipFile(f *zip.File, destination string) error {
+	filePath := filepath.Join(destination, f.Name)
+	if !strings.HasPrefix(filePath, filepath.Clean(destination) + string(os.PathSeparator)) {
+			return fmt.Errorf("Invalid file path: %s", filePath)
+	}
+
+	if f.FileInfo().IsDir() {
+			if err := os.MkdirAll(filePath, os.ModePerm); err != nil {
+					return err
+			}
+			return nil
+	}
+
+	if err := os.MkdirAll(filepath.Dir(filePath), os.ModePerm); err != nil {
+			return err
+	}
+
+	destinationFile, err := os.OpenFile(filePath, os.O_WRONLY | os.O_CREATE | os.O_TRUNC, f.Mode())
+	if err != nil {
+			return err
+	}
+	defer destinationFile.Close()
+
+	zippedFile, err := f.Open()
+	if err != nil {
+			return err
+	}
+	defer zippedFile.Close()
+
+	if _, err := io.Copy(destinationFile, zippedFile); err != nil {
+			return err
+	}
+	return nil
 }
