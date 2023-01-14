@@ -12,9 +12,10 @@ import (
 	"io"
 	"archive/zip"
 	"path/filepath"
+	"net/http"
+	"net/url"
 
 	"github.com/gocolly/colly"
-	"github.com/cavaliergopher/grab/v3"
 )
 
 // Thanks (https://twin.sh/articles/35/how-to-add-colors-to-your-console-terminal-output-in-go)
@@ -76,17 +77,44 @@ func main() {
 // Dont want to use Dependency but Thank: https://golangdocs.com/golang-download-files
 func downloadMod(downloadID string) {
 	downloadLink := apiURL + downloadID + "/download?"
-	resp, err := grab.Get(".", downloadLink)
+	fmt.Printf("downloadLink: %v\n", downloadLink)
 
+	//unzipSource(resp.Filename, ".")
+	//os.Remove(resp.Filename)
+}
+
+func download(link string, destination string) {
+	fileURL, err := url.Parse(link)
 	if err != nil {
 		panic(err)
 	}
-	
-	fmt.Println("Download Saved To: ", resp.Filename)
-	unzipSource(resp.Filename, ".")
-	os.Remove(resp.Filename)
-}
 
+	path := fileURL.Path
+	segments := strings.Split(path, "/")
+	fileName := segments[len(segments)-1]
+
+	file, err := os.Create(fileName)
+	if err != nil {
+		panic(err)
+	}
+
+	client := http.Client {
+		CheckRedirect: func(r *http.Request, via []*http.Request) error {
+			r.URL.Opaque = r.URL.Path
+			return nil
+		},
+	}
+
+	resp, err := client.Get(link)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	io.Copy(file, resp.Body)
+
+ 	defer file.Close()
+}
 
 // Thanks: https://gosamples.dev/unzip-file/
 func unzipSource(source, destination string) error {
