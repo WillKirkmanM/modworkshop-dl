@@ -79,11 +79,12 @@ func downloadMod(downloadID string) {
 	downloadLink := apiURL + downloadID + "/download?"
 	fmt.Printf("downloadLink: %v\n", downloadLink)
 
-	//unzipSource(resp.Filename, ".")
-	//os.Remove(resp.Filename)
+	download(downloadLink)
+	unzipSource("download", "./ABba")
+	os.Remove("download")
 }
 
-func download(link string, destination string) {
+func download(link string) {
 	fileURL, err := url.Parse(link)
 	if err != nil {
 		panic(err)
