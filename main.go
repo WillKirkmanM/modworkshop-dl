@@ -6,115 +6,120 @@ package main
 */
 
 import (
-	"fmt"
-	"os"
-	"strings"
-	"io"
 	"archive/zip"
+	"bufio"
+	"fmt"
+	"io"
+	"log"
+	"os"
 	"path/filepath"
-	"net/http"
-	"net/url"
+	"strings"
+	"time"
 
+	"github.com/cavaliergopher/grab/v3"
 	"github.com/gocolly/colly"
+	"github.com/gosuri/uilive"
 )
-
-// Thanks (https://twin.sh/articles/35/how-to-add-colors-to-your-console-terminal-output-in-go)
-var Reset  = "\033[0m"
-var Red    = "\033[31m"
-var Green  = "\033[32m"
-var Yellow = "\033[33m"
-var Blue   = "\033[34m"
-var Purple = "\033[35m"
-var Cyan   = "\033[36m"
-var Gray   = "\033[37m"
-var White  = "\033[97m"
 
 var baseURL string = "modworkshop.net"
 var apiURL string = "https://modworkshop.net/api/files/"
+var destination string = "."
+var writer = uilive.New()
 
 func main() {
-	// Start of File! (If you hadn't noticed.)
+
 	// modURL := user input
 	c := colly.NewCollector(
 		colly.AllowedDomains(baseURL),
 	)
 
-	c.OnHTML("div.flex-grow-1.p-3.d-flex.flex-column.data", func(r *colly.HTMLElement) {
-		title := r.ChildText("[id=title]")
-		downloadButtonText := r.ChildAttr("[id=download-button]", "href")
-		if !strings.Contains(downloadButtonText, "download") {
-			panic("The Mod You have Requested is Invalid / Does not Have a Download Link. Check the GitHub Page of the Mod!")
-		}
+	visitWebsitesAndDownload(c)
 
-		downloadID := strings.Split(downloadButtonText, "/download/")[1]
-
-		fmt.Printf("%sFound Mod%s: %s%s%s\n", Green, White, Yellow, title, White)
-		fmt.Printf("Size N/A\n")
-		// TODO: Get Size of Mod
-
-		// TODO: Do this if no text file parameter was set (in order to prevent annoyance)
-		fmt.Println("Would you like to download this mod? (Y/n)")
-
-		var answer string
-		fmt.Scan(&answer)
-
-		if answer == "Y" || answer == "y" {
-			downloadMod(downloadID)
-			os.Exit(0)
-		} else {
-			fmt.Println("Alright, Exiting Process...")
-			os.Exit(0)
-		}
-	})
 	// WolfHud
-	//c.Visit("https://modworkshop.net/mod/15901")
+	//c.Visit("https://modworkshop.net/mod/15901") // Doesn't Have Valid Download Link (Error)
 
 	// OneShot Mod
-	c.Visit("https://modworkshop.net/mod/40265")
+	//c.Visit("https://modworkshop.net/mod/40265")
 }
 
-// Thanks: https://www.sohamkamani.com/golang/exec-shell-command/
-// Dont want to use Dependency but Thank: https://golangdocs.com/golang-download-files
-func downloadMod(downloadID string) {
+func getModInformation(c *colly.Collector, mod string) (title string, downloadID string) {
+		c.OnHTML("div.flex-grow-1.p-3.d-flex.flex-column.data", func(r *colly.HTMLElement) {
+			title = r.ChildText("[id=title]")
+			downloadButtonText := r.ChildAttr("[id=download-button]", "href")
+			if !strings.Contains(downloadButtonText, "download") {
+				log.Fatal("The Mod You have Requested is Invalid / Does not Have a Download Link. Check the GitHub Page of the Mod!")
+			}
+			downloadID = strings.Split(downloadButtonText, "/download/")[1]
+	})
+		err := c.Visit(mod)
+		if err != nil {
+			log.Fatal("There was an error while running the mods you specified. Please Look in the modlist.txt file for any errors.\n", err)
+		}		
+	return title, downloadID
+}
+
+func visitWebsitesAndDownload(c *colly.Collector) {
+	modArray := loadModsFromText()
+
+	for i := 0; i < len(modArray); i++ {
+		title, downloadID := getModInformation(c, modArray[i])
+		resp := downloadMod(title, downloadID)
+		writer.Stop()
+		err := unzipSource(resp.Filename, destination)
+		if err != nil {
+			log.Fatal(err)
+		}
+		os.Remove(resp.Filename)
+	}
+	fmt.Println("Done! The Mods Have Been Downloaded and Installed!")
+}
+
+func loadModsFromText() []string {
+	file, err := os.Open("modlist.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+
+	modArray := []string{}
+	for scanner.Scan() {
+		modArray = append(modArray, scanner.Text())
+	}
+
+	if len(modArray) == 0 {
+		log.Fatal("There are no mods specified in modlist.txt!")
+	}
+	return modArray
+}
+
+func downloadMod(title string, downloadID string) (resp *grab.Response) {
 	downloadLink := apiURL + downloadID + "/download?"
-	fmt.Printf("downloadLink: %v\n", downloadLink)
 
-	download(downloadLink)
-	unzipSource("download", "./ABba")
-	os.Remove("download")
-}
-
-func download(link string) {
-	fileURL, err := url.Parse(link)
+	resp, err := grab.Get(destination, downloadLink)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
-	path := fileURL.Path
-	segments := strings.Split(path, "/")
-	fileName := segments[len(segments)-1]
+	writer.Start()
 
-	file, err := os.Create(fileName)
-	if err != nil {
-		panic(err)
-	}
+	t := time.NewTicker(5 * time.Millisecond)
+	defer t.Stop()
 
-	client := http.Client {
-		CheckRedirect: func(r *http.Request, via []*http.Request) error {
-			r.URL.Opaque = r.URL.Path
-			return nil
-		},
-	}
-
-	resp, err := client.Get(link)
-	if err != nil {
-		panic(err)
-	}
-	defer resp.Body.Close()
-
-	io.Copy(file, resp.Body)
-
- 	defer file.Close()
+	fmt.Fprintf(writer, "Downloading: %s\n", title)
+	Downloading:
+		for {
+			select {
+			case <-t.C:
+				fmt.Fprintf(writer, "Downloaded %v / %v (%.2f%%)\n", resp.BytesComplete(), resp.Size(), 100*resp.Progress())
+			case <-resp.Done:
+				fmt.Fprintf(writer, "The Download has Complete! took %v\n", resp.Duration())
+				break Downloading
+			}
+		}
+	return resp
 }
 
 // Thanks: https://gosamples.dev/unzip-file/
@@ -136,14 +141,14 @@ func unzipSource(source, destination string) error {
 					return err
 			}
 	}
-	os.Remove(source)
+
 	return nil
 }
 
 func unzipFile(f *zip.File, destination string) error {
 	filePath := filepath.Join(destination, f.Name)
-	if !strings.HasPrefix(filePath, filepath.Clean(destination) + string(os.PathSeparator)) {
-			return fmt.Errorf("Invalid file path: %s", filePath)
+	if !strings.HasPrefix(filePath, filepath.Clean(destination)+string(os.PathSeparator)) {
+			return fmt.Errorf("invalid file path: %s", filePath)
 	}
 
 	if f.FileInfo().IsDir() {
@@ -157,7 +162,7 @@ func unzipFile(f *zip.File, destination string) error {
 			return err
 	}
 
-	destinationFile, err := os.OpenFile(filePath, os.O_WRONLY | os.O_CREATE | os.O_TRUNC, f.Mode())
+	destinationFile, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
 	if err != nil {
 			return err
 	}
