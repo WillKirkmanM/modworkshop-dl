@@ -40,7 +40,7 @@ func getModDirectory() {
 	switch runtime.GOOS {
 	case "windows":
 		modsDirectory = `C:\Program Files (x86)\Steam\steamapps\common\PAYDAY 2\mods`
-		assetsDirectory =`C:\Program Files (x86)\Steam\steamapps\common\PAYDAY 2\mods\Assets`
+		assetsDirectory = `C:\Program Files (x86)\Steam\steamapps\common\PAYDAY 2\mods\assets`
 	}
 }
 
@@ -70,19 +70,16 @@ func visitWebsitesAndDownload(c *colly.Collector) {
 		for i := 0; i < len(modsArray); i++ {
 			title, downloadID := getModInformation(c, modsArray[i])
 			resp := downloadFile(title, downloadID, modsDirectory)
-			writer.Stop()
 			unzipFile(resp.Filename, modsDirectory)
 			os.Remove(resp.Filename)
 		}
 	}
 	
 	if len(assetsArray) > 0 {
-	fmt.Println("Downloading Assets!")
+		fmt.Println("Downloading Assets!")
 		for i := 0; i < len(assetsArray); i++ {
-			fmt.Println(i)
 			title, downloadID := getModInformation(c, assetsArray[i])
 			resp := downloadFile(title, downloadID, assetsDirectory)
-			writer.Stop()
 			unzipFile(resp.Filename, assetsDirectory)
 			os.Remove(resp.Filename)
 		}
@@ -114,14 +111,14 @@ func parseText(filePath string) (modsArray []string, assetsArray []string) {
 			continue
 		}
 
-		if matchedMods {
-			modsArray = append(modsArray, text)				
-		}
-
 		if text == "Assets" {
 			matchedMods = false
 			matchedAssets = true
 			continue
+		}
+
+		if matchedMods {
+			modsArray = append(modsArray, text)				
 		}
 
 		if matchedAssets {
@@ -141,6 +138,7 @@ func downloadFile(title string, downloadID string, destination string) (resp *gr
 
 	progress := writer.Newline()
 	writer.Start()
+	defer writer.Stop()
 
 	t := time.NewTicker(100 * time.Millisecond)
 	defer t.Stop()

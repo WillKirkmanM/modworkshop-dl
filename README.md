@@ -29,3 +29,4 @@ To build the files run the command
 - The "Fundahmentals" of Golang ⏩
 - Command Line Tooling (How they are made) 💿
 - Web Scraping ✨
+- As a person with OCD. Never write all of your code in one file, You'll go Crazy.
