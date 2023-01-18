@@ -61,10 +61,11 @@ func getModInformation(c *colly.Collector, mod string) (title string, downloadID
 }
 
 func visitWebsitesAndDownload(c *colly.Collector) {
-	modArray := loadModsFromText()
 
-	for i := 0; i < len(modArray); i++ {
-		title, downloadID := getModInformation(c, modArray[i])
+	modsArray, assetsArray := parseText()
+
+	for i := 0; i < len(modsArray); i++ {
+		title, downloadID := getModInformation(c, modsArray[i])
 		resp := downloadMod(title, downloadID)
 		writer.Stop()
 		//unzipSource(resp.Filename, destination)
@@ -74,7 +75,7 @@ func visitWebsitesAndDownload(c *colly.Collector) {
 	fmt.Println("Done! The Mods Have Been Downloaded and Installed!")
 }
 
-func parseText(filePath string) (modArray []string, assetArray []string) {
+func parseText(filePath string) (modsArray []string, assetsArray []string) {
 	file, err := os.Open("file.txt")
 	if err != nil {
 		log.Fatal(err)
@@ -83,9 +84,6 @@ func parseText(filePath string) (modArray []string, assetArray []string) {
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
-
-	modsArray := []string{}
-	assetsArray := []string{}
 
 	matchedMods := false
 	matchedAssets := false
@@ -116,11 +114,10 @@ func parseText(filePath string) (modArray []string, assetArray []string) {
 		}
 	}
 
-
-	if len(modArray) == 0 {
+	if len(modsArray) == 0 {
 		log.Fatal("There are no mods specified in modlist.txt!")
 	}
-	return modsArray, assetArray
+	return modsArray, assetsArray
 }
 
 func downloadMod(title string, downloadID string) (resp *grab.Response) {
