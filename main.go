@@ -31,7 +31,7 @@ var writer = uilive.New()
 func main() {
 	getModDirectory()
 	c := colly.NewCollector(
-		colly.AllowedDomains(baseURL, "www.dropbox.com"),
+		colly.AllowedDomains(baseURL),
 	)
 	visitWebsitesAndDownload(c)
 }
@@ -48,12 +48,11 @@ func getModInformation(c *colly.Collector, mod string) (title string, downloadID
 		c.OnHTML("div.flex-grow-1.p-3.d-flex.flex-column.data", func(r *colly.HTMLElement) {
 			title = r.ChildText("[id=title]")
 			downloadButtonText := r.ChildAttr("[id=download-button]", "href")
-			downloadID = r.ChildAttr("[div#download-popover]", "[a-href]") // DeleteMe
-			fmt.Println("DLT", downloadID)
 			if !strings.Contains(downloadButtonText, "download") {
 				log.Fatal("The Mod You have Requested is Invalid / Does not Have a Download Link. Check the GitHub Page of the Mod!")
 			}
-			//downloadID = strings.Split(downloadButtonText, "/download/")[1]
+
+			downloadID = strings.Split(downloadButtonText, "/download/")[1]
 	})
 		err := c.Visit(mod)
 		if err != nil {
