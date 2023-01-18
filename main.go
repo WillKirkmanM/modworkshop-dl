@@ -4,12 +4,15 @@ package main
 	Goal of Project:
 	- Be able to download files from modworkshop (https://modworkshop.net/)
 */
+// Different Games in navbar Home/Games/{Game}
+// Detect what game users 
 
 import (
 	"bufio"
 	"fmt"
 	"log"
 	"os"
+	"runtime"
 	"strings"
 	"time"
 
@@ -22,13 +25,23 @@ import (
 var baseURL string = "modworkshop.net"
 var apiURL string = "https://modworkshop.net/api/files/"
 var destination string = "."
+var assetsDirectory string = "."
 var writer = uilive.New()
 
 func main() {
+	getModDirectory()
 	c := colly.NewCollector(
 		colly.AllowedDomains(baseURL),
 	)
 	visitWebsitesAndDownload(c)
+}
+
+func getModDirectory() {
+	switch runtime.GOOS {
+	case "windows":
+		destination = `C:\Program Files (x86)\Steam\steamapps\common\PAYDAY 2\mods`
+		assetsDirectory =`C:\Program Files (x86)\Steam\steamapps\common\PAYDAY 2\mods\Assets`
+	}
 }
 
 func getModInformation(c *colly.Collector, mod string) (title string, downloadID string) {
@@ -61,8 +74,8 @@ func visitWebsitesAndDownload(c *colly.Collector) {
 	fmt.Println("Done! The Mods Have Been Downloaded and Installed!")
 }
 
-func loadModsFromText() []string {
-	file, err := os.Open("modlist.txt")
+func parseText(filePath string) (modArray []string, assetArray []string) {
+	file, err := os.Open("file.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -71,15 +84,43 @@ func loadModsFromText() []string {
 
 	scanner := bufio.NewScanner(file)
 
-	modArray := []string{}
+	modsArray := []string{}
+	assetsArray := []string{}
+
+	matchedMods := false
+	matchedAssets := false
+
 	for scanner.Scan() {
-		modArray = append(modArray, scanner.Text())
+		text := scanner.Text()
+		if text == "" {
+			continue
+		}
+
+		if text == "Mods" {
+			matchedMods = true
+			continue
+		}
+
+		if matchedMods {
+			modsArray = append(modsArray, text)				
+		}
+
+		if text == "Assets" {
+			matchedMods = false
+			matchedAssets = true
+			continue
+		}
+
+		if matchedAssets {
+			assetsArray = append(assetsArray, text)
+		}
 	}
+
 
 	if len(modArray) == 0 {
 		log.Fatal("There are no mods specified in modlist.txt!")
 	}
-	return modArray
+	return modsArray, assetArray
 }
 
 func downloadMod(title string, downloadID string) (resp *grab.Response) {
