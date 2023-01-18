@@ -6,19 +6,17 @@ package main
 */
 
 import (
-	"archive/zip"
 	"bufio"
 	"fmt"
-	"io"
 	"log"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/cavaliergopher/grab/v3"
 	"github.com/gocolly/colly"
 	"github.com/gosuri/uilive"
+	"github.com/mholt/archiver/v3"
 )
 
 var baseURL string = "modworkshop.net"
@@ -65,10 +63,8 @@ func visitWebsitesAndDownload(c *colly.Collector) {
 		title, downloadID := getModInformation(c, modArray[i])
 		resp := downloadMod(title, downloadID)
 		writer.Stop()
-		err := unzipSource(resp.Filename, destination)
-		if err != nil {
-			log.Fatal(err)
-		}
+		//unzipSource(resp.Filename, destination)
+		unzipFile(resp.Filename)
 		os.Remove(resp.Filename)
 	}
 	fmt.Println("Done! The Mods Have Been Downloaded and Installed!")
@@ -115,14 +111,41 @@ func downloadMod(title string, downloadID string) (resp *grab.Response) {
 			case <-t.C:
 				fmt.Fprintf(writer, "Downloaded %v / %v (%.2f%%)\n", resp.BytesComplete(), resp.Size(), 100*resp.Progress())
 			case <-resp.Done:
-				fmt.Fprintf(writer, "The Download has Complete! took %v\n", resp.Duration())
+				fmt.Fprintf(writer, "The Download has Complete! Took %v\n", resp.Duration())
 				break Downloading
 			}
 		}
 	return resp
 }
 
+func unzipFile(file string) {
+	switch file[len(file)-3:] {
+	case "zip":
+		println("Zip FIle")
+		err := archiver.DefaultZip.Extract(file, destination, destination)
+		if err != nil {
+			log.Fatal(err)
+		}
+		break
+	case "tar":
+		println("tar ball")
+		err := archiver.DefaultTar.Extract(file, destination, destination)
+		if err != nil {
+			log.Fatal(err)
+		}
+		break
+	case "rar":
+		println("rar File")
+		err := archiver.DefaultRar.Extract(file, destination, destination)
+		if err != nil {
+			log.Fatal(err)
+		}
+		break
+	}
+}
+
 // Thanks: https://gosamples.dev/unzip-file/
+/*
 func unzipSource(source, destination string) error {
 	reader, err := zip.OpenReader(source)
 	if err != nil {
@@ -145,6 +168,7 @@ func unzipSource(source, destination string) error {
 	return nil
 }
 
+/*
 func unzipFile(f *zip.File, destination string) error {
 	filePath := filepath.Join(destination, f.Name)
 	if !strings.HasPrefix(filePath, filepath.Clean(destination)+string(os.PathSeparator)) {
@@ -179,3 +203,4 @@ func unzipFile(f *zip.File, destination string) error {
 	}
 	return nil
 }
+*/
