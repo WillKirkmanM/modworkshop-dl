@@ -17,6 +17,15 @@ $ ./modworkshop-dl
 
 ### Building
 To build the files run the command
-```bash
-go build
-```
+
+  ### How does it work?
+  - Web Scraping with [Colly](http://go-colly.org/)
+  - Downloading with [Grab](https://github.com/cavaliergopher/grab)
+  - Interactive Terminal with [Uilive](https://github.com/gosuri/uilive)
+  - Unarchiving .zip / .rar / .tar with [Archiver v3](https://github.com/mholt/archiver)
+
+
+### What I've Learned
+- The "Fundahmentals" of Golang ⏩
+- Command Line Tooling (How they are made) 💿
+- Web Scraping ✨
