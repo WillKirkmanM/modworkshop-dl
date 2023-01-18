@@ -24,14 +24,14 @@ import (
 
 var baseURL string = "modworkshop.net"
 var apiURL string = "https://modworkshop.net/api/files/"
-var destination string = "."
+var modsDirectory string = "."
 var assetsDirectory string = "."
 var writer = uilive.New()
 
 func main() {
 	getModDirectory()
 	c := colly.NewCollector(
-		colly.AllowedDomains(baseURL),
+		colly.AllowedDomains(baseURL, "www.dropbox.com"),
 	)
 	visitWebsitesAndDownload(c)
 }
@@ -39,7 +39,7 @@ func main() {
 func getModDirectory() {
 	switch runtime.GOOS {
 	case "windows":
-		destination = `C:\Program Files (x86)\Steam\steamapps\common\PAYDAY 2\mods`
+		modsDirectory = `C:\Program Files (x86)\Steam\steamapps\common\PAYDAY 2\mods`
 		assetsDirectory =`C:\Program Files (x86)\Steam\steamapps\common\PAYDAY 2\mods\Assets`
 	}
 }
@@ -48,35 +48,51 @@ func getModInformation(c *colly.Collector, mod string) (title string, downloadID
 		c.OnHTML("div.flex-grow-1.p-3.d-flex.flex-column.data", func(r *colly.HTMLElement) {
 			title = r.ChildText("[id=title]")
 			downloadButtonText := r.ChildAttr("[id=download-button]", "href")
+			downloadID = r.ChildAttr("[div#download-popover]", "[a-href]") // DeleteMe
+			fmt.Println("DLT", downloadID)
 			if !strings.Contains(downloadButtonText, "download") {
 				log.Fatal("The Mod You have Requested is Invalid / Does not Have a Download Link. Check the GitHub Page of the Mod!")
 			}
-			downloadID = strings.Split(downloadButtonText, "/download/")[1]
+			//downloadID = strings.Split(downloadButtonText, "/download/")[1]
 	})
 		err := c.Visit(mod)
 		if err != nil {
-			log.Fatal("There was an error while running the mods you specified. Please Look in the modlist.txt file for any errors.\n", err)
+			log.Fatal("There was an error while running the mods you specified. Please Look in the modlist.txt file for any formatting errors.\n", err)
 		}		
 	return title, downloadID
 }
 
 func visitWebsitesAndDownload(c *colly.Collector) {
 
-	modsArray, assetsArray := parseText()
+	modsArray, assetsArray := parseText("modlist.txt")
 
-	for i := 0; i < len(modsArray); i++ {
-		title, downloadID := getModInformation(c, modsArray[i])
-		resp := downloadMod(title, downloadID)
-		writer.Stop()
-		//unzipSource(resp.Filename, destination)
-		unzipFile(resp.Filename)
-		os.Remove(resp.Filename)
+	if len(modsArray) > 0 {
+		fmt.Println("Downloading Mods!")
+		for i := 0; i < len(modsArray); i++ {
+			title, downloadID := getModInformation(c, modsArray[i])
+			resp := downloadFile(title, downloadID, modsDirectory)
+			writer.Stop()
+			unzipFile(resp.Filename, modsDirectory)
+			os.Remove(resp.Filename)
+		}
 	}
-	fmt.Println("Done! The Mods Have Been Downloaded and Installed!")
-}
+	
+	if len(assetsArray) > 0 {
+	fmt.Println("Downloading Assets!")
+		for i := 0; i < len(assetsArray); i++ {
+			fmt.Println(i)
+			title, downloadID := getModInformation(c, assetsArray[i])
+			resp := downloadFile(title, downloadID, assetsDirectory)
+			writer.Stop()
+			unzipFile(resp.Filename, assetsDirectory)
+			os.Remove(resp.Filename)
+		}
+	}
+	fmt.Println("Done! The Mods and/or Assets Have Been Downloaded and Installed!")
+	}
 
 func parseText(filePath string) (modsArray []string, assetsArray []string) {
-	file, err := os.Open("file.txt")
+	file, err := os.Open("modlist.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -113,14 +129,10 @@ func parseText(filePath string) (modsArray []string, assetsArray []string) {
 			assetsArray = append(assetsArray, text)
 		}
 	}
-
-	if len(modsArray) == 0 {
-		log.Fatal("There are no mods specified in modlist.txt!")
-	}
 	return modsArray, assetsArray
 }
 
-func downloadMod(title string, downloadID string) (resp *grab.Response) {
+func downloadFile(title string, downloadID string, destination string) (resp *grab.Response) {
 	downloadLink := apiURL + downloadID + "/download?"
 
 	resp, err := grab.Get(destination, downloadLink)
@@ -128,9 +140,10 @@ func downloadMod(title string, downloadID string) (resp *grab.Response) {
 		log.Fatal(err)
 	}
 
+	progress := writer.Newline()
 	writer.Start()
 
-	t := time.NewTicker(5 * time.Millisecond)
+	t := time.NewTicker(100 * time.Millisecond)
 	defer t.Stop()
 
 	fmt.Fprintf(writer, "Downloading: %s\n", title)
@@ -138,19 +151,20 @@ func downloadMod(title string, downloadID string) (resp *grab.Response) {
 		for {
 			select {
 			case <-t.C:
-				fmt.Fprintf(writer, "Downloaded %v / %v (%.2f%%)\n", resp.BytesComplete(), resp.Size(), 100*resp.Progress())
+				fmt.Println("Downloading")
+				fmt.Fprintf(progress, "Downloaded %v / %v (%.2f%%)\n", resp.BytesComplete(), resp.Size(), 100*resp.Progress())
 			case <-resp.Done:
-				fmt.Fprintf(writer, "The Download has Complete! Took %v\n", resp.Duration())
+				fmt.Fprintf(progress, "The Download has Complete! Took %v\n", resp.Duration())
 				break Downloading
 			}
 		}
 	return resp
 }
 
-func unzipFile(file string) {
+func unzipFile(file string, destination string) {
 	switch file[len(file)-3:] {
 	case "zip":
-		err := archiver.DefaultZip.Unarchive(file, destination)
+		err := archiver.DefaultZip.Unarchive(file, destination) 
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -162,7 +176,7 @@ func unzipFile(file string) {
 		}
 		break
 	case "rar":
-		err := archiver.DefaultRar.Unarchive(file, destination)
+		err := archiver.DefaultRar.Unarchive(file, destination) 
 		if err != nil {
 			log.Fatal(err)
 		}
