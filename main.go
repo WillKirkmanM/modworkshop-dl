@@ -5,10 +5,11 @@ package main
 	- Be able to download files from modworkshop (https://modworkshop.net/)
 */
 // Different Games in navbar Home/Games/{Game}
-// Detect what game users 
+// Detect what game users
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -28,8 +29,15 @@ var modsDirectory string = "."
 var assetsDirectory string = "."
 var writer = uilive.New()
 
+// CLI Arguments
+var file *string = flag.String("file", "modlist.txt", "The text file containing the mods.")
+
 func main() {
+
 	getModDirectory()
+	parseCliArgs()
+	beforeChecks()
+
 	c := colly.NewCollector(
 		colly.AllowedDomains(baseURL),
 	)
@@ -56,14 +64,14 @@ func getModInformation(c *colly.Collector, mod string) (title string, downloadID
 	})
 		err := c.Visit(mod)
 		if err != nil {
-			log.Fatal("There was an error while running the mods you specified. Please Look in the modlist.txt file for any formatting errors.\n", err)
+			log.Fatalf("There was an error while running the mods you specified. Please Look in the %s file for any formatting errors. %s\n", *file,  err)
 		}		
 	return title, downloadID
 }
 
 func visitWebsitesAndDownload(c *colly.Collector) {
 
-	modsArray, assetsArray := parseText("modlist.txt")
+	modsArray, assetsArray := parseText(*file)
 
 	if len(modsArray) > 0 {
 		fmt.Println("Downloading Mods!")
@@ -88,7 +96,7 @@ func visitWebsitesAndDownload(c *colly.Collector) {
 	}
 
 func parseText(filePath string) (modsArray []string, assetsArray []string) {
-	file, err := os.Open("modlist.txt")
+	file, err := os.Open(filePath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -179,4 +187,26 @@ func unzipFile(file string, destination string) {
 		}
 		break
 	}
+}
+
+func beforeChecks() {
+if _, err := os.Stat(modsDirectory); os.IsNotExist(err) {
+	os.Mkdir(modsDirectory, os.ModeDir)
+	} else {
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+if _, err := os.Stat(assetsDirectory); os.IsNotExist(err) {
+	os.Mkdir(assetsDirectory, os.ModeDir)
+	} else {
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+}
+
+func parseCliArgs() {
+	flag.Parse()
 }

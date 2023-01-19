@@ -16,7 +16,25 @@ $ ./modworkshop-dl
 5. Launch `PAYDAY 2`
 
 ### Building
-To build the files run the command
+To build the files run the command:
+```
+go build
+```
+If the above does not work try the command:
+```
+go install
+```
+
+### Usage
+See the usage by running
+```
+$ modworkshop-dl --help
+```
+```
+Usage of modworkshop-dl:
+  -file string
+        The text file containing the mods. (default "modlist.txt")
+```
 
   ### How does it work?
   - Web Scraping with [Colly](http://go-colly.org/)
