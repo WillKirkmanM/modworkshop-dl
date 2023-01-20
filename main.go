@@ -41,7 +41,7 @@ func main() {
 	c := colly.NewCollector(
 		colly.AllowedDomains(baseURL),
 	)
-	visitWebsitesAndDownload(c)
+	downloadFromFile(c)
 }
 
 func getModDirectory() {
@@ -69,7 +69,7 @@ func getModInformation(c *colly.Collector, mod string) (title string, downloadID
 	return title, downloadID
 }
 
-func visitWebsitesAndDownload(c *colly.Collector) {
+func downloadFromFile(c *colly.Collector) {
 
 	modsArray, assetsArray := parseText(*file)
 
