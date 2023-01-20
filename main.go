@@ -32,16 +32,24 @@ var writer = uilive.New()
 // CLI Arguments
 var file *string = flag.String("file", "modlist.txt", "The text file containing the mods.")
 
+type modInformation struct {
+	Name				string	`json:"name"`
+	Description string 	`json:"description"`	
+	ID 					string	`json:"id"`
+	Game				string	`json:"game"`
+}
+
+
 func main() {
-
-	getModDirectory()
-	parseCliArgs()
-	beforeChecks()
-
 	c := colly.NewCollector(
 		colly.AllowedDomains(baseURL),
 	)
-	downloadFromFile(c)
+	searchMod("wolfhud", c)
+
+	//getModDirectory()
+	//parseCliArgs()
+	//beforeChecks()
+	//downloadFromFile(c)
 }
 
 func getModDirectory() {
@@ -209,4 +217,17 @@ if _, err := os.Stat(assetsDirectory); os.IsNotExist(err) {
 
 func parseCliArgs() {
 	flag.Parse()
+}
+
+func searchMod(query string, c *colly.Collector) [5]string {
+	searchItems := [5]string{}
+
+	c.OnHTML("div.content", func(r *colly.HTMLElement) {
+		mod1Text := r.ChildAttr("div.mod mx-auto", "title")
+		fmt.Println(mod1Text)
+	})
+
+	c.Visit("https://modworkshop.net/find/mod?q=" + query)
+
+	return searchItems;
 }
