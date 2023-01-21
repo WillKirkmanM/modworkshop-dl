@@ -1,6 +1,6 @@
 # modworkshop-dl
 <p align=center>
-  <img src=https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Payday2-logo.png/1200px-Payday2-logo.png>
+  <img src=https://www.seekpng.com/png/full/118-1189330_modworkshop-mod-workshop-payday-2.png>
 </p>
 
 ## ℹ A Command-Line Utility Tool for Installing Mods from [Mod Workshop](https://modworkshop.net/)
