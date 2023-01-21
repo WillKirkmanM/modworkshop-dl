@@ -35,7 +35,6 @@ var writer = uilive.New()
 // CLI Argument Variables
 var file string
 var search string
-var install string
 var help bool 
 
 type Mod struct {
@@ -108,7 +107,10 @@ func downloadFromFile(c *colly.Collector) {
 
 	modsArray, assetsArray := parseText(file)
 
+	endStr := "Done! The "
+
 	if len(modsArray) > 0 {
+		endStr += "Mods "
 		fmt.Println("Downloading Mods!")
 		for i := 0; i < len(modsArray); i++ {
 			title, downloadID := getModInformation(c, modsArray[i])
@@ -117,8 +119,11 @@ func downloadFromFile(c *colly.Collector) {
 			os.Remove(resp.Filename)
 		}
 	}
+
+	if len(modsArray) > 0 && len(assetsArray) > 0 { endStr += "and " }
 	
 	if len(assetsArray) > 0 {
+		endStr += "Assets "
 		fmt.Println("Downloading Assets!")
 		for i := 0; i < len(assetsArray); i++ {
 			title, downloadID := getModInformation(c, assetsArray[i])
@@ -127,7 +132,7 @@ func downloadFromFile(c *colly.Collector) {
 			os.Remove(resp.Filename)
 		}
 	}
-	fmt.Println("Done! The Mods and/or Assets Have Been Downloaded and Installed!")
+	fmt.Println(endStr, "Have Been Downloaded and Installed!")
 	}
 
 func parseText(filePath string) (modsArray []string, assetsArray []string) {
@@ -253,18 +258,18 @@ func parseCliArgs(c *colly.Collector) {
 	flag.StringVar(&file, "f", "", "The text file containing the mods.")
 	flag.StringVar(&search, "search", "", "The Mod To Search.")
 	flag.StringVar(&search, "S", "", "The Mod To Search")
-	flag.StringVar(&install, "I", "", "The Mod To Install.")
 	flag.BoolVar(&help, "h", false, "View all Commands.")
 	flag.BoolVar(&help, "help", false, "View all Commands.")
 	flag.Parse()
 
+	search = strings.Join(os.Args[2:], " ")
+    if search != "" && os.Args[1] == "-S" {	
+		searchForMod(search)
+	}
+
 	if file != "" {
 		downloadFromFile(c)
 	}
-
-	if search != "" {
-		searchForMod(search)
-	} 
 
 	if help == true {
 		fmt.Printf(
@@ -274,9 +279,8 @@ Modworkshop-dl allows for installing mods with ease.
 usage: modworkshop-dl [<command>] [<argument>]
 
 The following commands are available:
-search, S			The mod to search 				[-S WolfHud]
-file, f				The text file containing the mods		[-f modlist.txt]
-install, I			The mod to install				[-I  1]
+search, S			The mod to search 				[-S <Name>]
+file, f				The text file containing the mods		[-f <File>]
 		`)
 	} 
 }
@@ -292,7 +296,9 @@ func searchForMod(query string) {
 
 	// Print Stuff to Out
 
-	for i := 0; i < 10; i++ {
+	if len(modResponseObject.Content) > 0 {
+			for i := 0; i < len(modResponseObject.Content); i++ {
+				if i == 10 { break }
 			fmt.Printf(
 		`
 		[%v] %s 
@@ -312,10 +318,8 @@ func searchForMod(query string) {
 		modResponseObject.Content[i].Views,
 	
 		modResponseObject.Content[i].Timeago,
-	)
+	)}
+	} else {
+		fmt.Println("No mods found")
 	}
-}
-
-func choose(index int) {
-	// I'm thinking take in array then choose from that!
 }

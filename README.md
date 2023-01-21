@@ -11,9 +11,41 @@
 3. Paste the desired assets in the "`Assets`" header
 4. Start the tool
 ```
-$ ./modworkshop-dl
+$ ./modworkshop-dl --file modlist.txt
 ```
-5. Launch `PAYDAY 2`
+5. Launch `PAYDAY 2`!
+
+### Examples
+```
+# modlist.txt
+Mods
+https://modworkshop.net/mod/40265
+https://modworkshop.net/mod/40992
+https://modworkshop.net/mod/41000
+
+Assets
+https://modworkshop.net/mod/41001
+https://modworkshop.net/mod/40586
+```
+### Usage
+See the usage by running
+```
+$ modworkshop-dl --help
+```
+```
+Modworkshop-dl allows for installing mods with ease.
+
+usage: modworkshop-dl [<command>] [<argument>]
+
+The following commands are available:
+search, S                       The mod to search                               [-S <Name>]
+file, f                         The text file containing the mods               [-f <File>]
+```
+
+### Supported Games
+| Game    	| Windows 	| Mac 	| Linux 	|
+|---------	|---------	|-----	|-------	|
+| PAYDAY 2 	| 🟩       	| 🟥   	| 🟥     |
 
 ### Building
 To build the files run the command:
@@ -25,16 +57,6 @@ If the above does not work try the command:
 go install
 ```
 
-### Usage
-See the usage by running
-```
-$ modworkshop-dl --help
-```
-```
-Usage of modworkshop-dl:
-  -file string
-        The text file containing the mods. (default "modlist.txt")
-```
 
   ### How does it work?
   - Web Scraping with [Colly](http://go-colly.org/)
