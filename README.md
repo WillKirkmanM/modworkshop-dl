@@ -1,6 +1,6 @@
 # modworkshop-dl
 <p align=center>
-  <img src=https://www.seekpng.com/png/full/118-1189330_modworkshop-mod-workshop-payday-2.png>
+  <img src=https://static-cdn.jtvnw.net/jtv_user_pictures/modworkshop-profile_banner-cdd7f7df7d93caa0-480.png>
 </p>
 
 ## ℹ A Command-Line Utility Tool for Installing Mods from [Mod Workshop](https://modworkshop.net/)
