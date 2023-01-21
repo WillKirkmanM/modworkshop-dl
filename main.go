@@ -13,6 +13,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"encoding/json"
+	"io/ioutil"
+	"net/http"
 	"runtime"
 	"strings"
 	"time"
@@ -29,35 +32,59 @@ var modsDirectory string = "."
 var assetsDirectory string = "."
 var writer = uilive.New()
 
-// CLI Arguments
-var file *string = flag.String("file", "modlist.txt", "The text file containing the mods.")
+// CLI Argument Variables
+var file string
+var search string
+var install string
+var help bool 
 
-type modInformation struct {
-	Name				string	`json:"name"`
-	Description string 	`json:"description"`	
-	ID 					string	`json:"id"`
-	Game				string	`json:"game"`
+type Mod struct {
+	Did                  int         `json:"did"`
+	Name                 string      `json:"name"`
+	SuspendedStatus      int         `json:"suspended_status"`
+	FileStatus           int         `json:"file_status"`
+	Hidden               int         `json:"hidden"`
+	Thumbnail            string      `json:"thumbnail"`
+	SubmitterUID         int         `json:"submitter_uid"`
+	Submitter            string      `json:"submitter"`
+	CollaboratorsNr      int         `json:"collaborators_nr"`
+	ShortDescription     string      `json:"short_description"`
+	Game                 string      `json:"game"`
+	GameShort            string      `json:"game_short"`
+	Gid                  int         `json:"gid"`
+	Category             string      `json:"category"`
+	Cid                  int         `json:"cid"`
+	Views                interface{} `json:"views"`
+	Downloads            interface{} `json:"downloads"`
+	Likes                int         `json:"likes"`
+	Date                 string      `json:"date"`
+	PubDate              string      `json:"pub_date"`
+	Timeago              string      `json:"timeago"`
+	TimeagoPub           string      `json:"timeago_pub"`
+	DateTimestamp        int         `json:"date_timestamp"`
+	PubDateTimestamp     int         `json:"pub_date_timestamp"`
+	IsNsfw               int         `json:"is_nsfw"`
+	UsesDefaultThumbnail interface{} `json:"uses_default_thumbnail"`
+} 
+
+type Response struct {
+	Success       int       `json:"success"`
+	Cache         string    `json:"cache"`
+	Content       []Mod     `json:"content"`
+	Total         int       `json:"total"`
+	PerPage       int       `json:"perpage"`
 }
 
+var modResponseObject Response
 
 func main() {
+	beforeChecks()
+
 	c := colly.NewCollector(
 		colly.AllowedDomains(baseURL),
 	)
-	searchMod("wolfhud", c)
 
-	//getModDirectory()
-	//parseCliArgs()
-	//beforeChecks()
-	//downloadFromFile(c)
-}
-
-func getModDirectory() {
-	switch runtime.GOOS {
-	case "windows":
-		modsDirectory = `C:\Program Files (x86)\Steam\steamapps\common\PAYDAY 2\mods`
-		assetsDirectory = `C:\Program Files (x86)\Steam\steamapps\common\PAYDAY 2\mods\assets`
-	}
+	parseCliArgs(c)
 }
 
 func getModInformation(c *colly.Collector, mod string) (title string, downloadID string) {
@@ -72,14 +99,14 @@ func getModInformation(c *colly.Collector, mod string) (title string, downloadID
 	})
 		err := c.Visit(mod)
 		if err != nil {
-			log.Fatalf("There was an error while running the mods you specified. Please Look in the %s file for any formatting errors. %s\n", *file,  err)
+			log.Fatalf("There was an error while running the mods you specified. Please Look in the %s file for any formatting errors. %s\n", file,  err)
 		}		
 	return title, downloadID
 }
 
 func downloadFromFile(c *colly.Collector) {
 
-	modsArray, assetsArray := parseText(*file)
+	modsArray, assetsArray := parseText(file)
 
 	if len(modsArray) > 0 {
 		fmt.Println("Downloading Mods!")
@@ -198,36 +225,97 @@ func unzipFile(file string, destination string) {
 }
 
 func beforeChecks() {
-if _, err := os.Stat(modsDirectory); os.IsNotExist(err) {
-	os.Mkdir(modsDirectory, os.ModeDir)
-	} else {
-		if err != nil {
-			log.Fatal(err)
-		}
+	switch runtime.GOOS {
+	case "windows":
+		modsDirectory = `C:\Program Files (x86)\Steam\steamapps\common\PAYDAY 2\mods`
+		assetsDirectory = `C:\Program Files (x86)\Steam\steamapps\common\PAYDAY 2\mods\assets`
 	}
 
-if _, err := os.Stat(assetsDirectory); os.IsNotExist(err) {
-	os.Mkdir(assetsDirectory, os.ModeDir)
-	} else {
-		if err != nil {
-			log.Fatal(err)
+	if _, err := os.Stat(modsDirectory); os.IsNotExist(err) {
+		os.Mkdir(modsDirectory, os.ModeDir)
+		} else {
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
-	}
+
+	if _, err := os.Stat(assetsDirectory); os.IsNotExist(err) {
+		os.Mkdir(assetsDirectory, os.ModeDir)
+		} else {
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
 }
 
-func parseCliArgs() {
+func parseCliArgs(c *colly.Collector) {
+	flag.StringVar(&file, "file", "", "The text file containing the mods.")
+	flag.StringVar(&file, "f", "", "The text file containing the mods.")
+	flag.StringVar(&search, "search", "", "The Mod To Search.")
+	flag.StringVar(&search, "S", "", "The Mod To Search")
+	flag.StringVar(&install, "I", "", "The Mod To Install.")
+	flag.BoolVar(&help, "h", false, "View all Commands.")
+	flag.BoolVar(&help, "help", false, "View all Commands.")
 	flag.Parse()
+
+	if file != "" {
+		downloadFromFile(c)
+	}
+
+	if search != "" {
+		searchForMod(search)
+	} 
+
+	if help == true {
+		fmt.Printf(
+		`
+Modworkshop-dl allows for installing mods with ease.
+
+usage: modworkshop-dl [<command>] [<argument>]
+
+The following commands are available:
+search, S			The mod to search 				[-S WolfHud]
+file, f				The text file containing the mods		[-f modlist.txt]
+install, I			The mod to install				[-I  1]
+		`)
+	} 
 }
 
-func searchMod(query string, c *colly.Collector) [5]string {
-	searchItems := [5]string{}
+func searchForMod(query string) {
+	res, err := http.Get(fmt.Sprintf("https://modworkshop.net/mws/api/modsapi.php?count_total=1&query=%s&func=mods&page=1", query))
+	if err != nil {
+			log.Fatal(err)
+	}
 
-	c.OnHTML("div.content", func(r *colly.HTMLElement) {
-		mod1Text := r.ChildAttr("div.mod mx-auto", "title")
-		fmt.Println(mod1Text)
-	})
+	responseData, err := ioutil.ReadAll(res.Body)
+	json.Unmarshal(responseData, &modResponseObject)
 
-	c.Visit("https://modworkshop.net/find/mod?q=" + query)
+	// Print Stuff to Out
 
-	return searchItems;
+	for i := 0; i < 10; i++ {
+			fmt.Printf(
+		`
+		[%v] %s 
+			🧍 %s
+			📍 %s / %s
+			❤ %v 😋 %v 👁️  %v		🕑 %s
+		
+		`, i + 1, 
+		modResponseObject.Content[i].Name, 
+		modResponseObject.Content[i].Submitter,
+	
+		modResponseObject.Content[i].Game,
+		modResponseObject.Content[i].Category,
+	
+		modResponseObject.Content[i].Likes,
+		modResponseObject.Content[i].Downloads,
+		modResponseObject.Content[i].Views,
+	
+		modResponseObject.Content[i].Timeago,
+	)
+	}
+}
+
+func choose(index int) {
+	// I'm thinking take in array then choose from that!
 }
