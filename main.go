@@ -180,7 +180,6 @@ func parseText(filePath string) (modsArray []string, assetsArray []string) {
 func downloadFile(title string, downloadID string, destination string) (resp *grab.Response) {
 	downloadLink := apiURL + downloadID + "/download?"
 
-	fmt.Println(downloadLink)
 	resp, err := grab.Get(destination, downloadLink)
 	if err != nil {
 		log.Fatal(err)
@@ -287,6 +286,10 @@ search, S			The mod to search 				[-S <Name>]
 file, f				The text file containing the mods		[-f <File>]
 		`)
 	} 
+
+	if install != "" {
+		installMod(install, c)
+	}
 }
 
 func searchForMod(query string, c *colly.Collector) {
@@ -335,12 +338,19 @@ func searchForMod(query string, c *colly.Collector) {
 	}
 }
 
-func downloadModFromID(ID int) {
+func downloadModFromID(ID int, c *colly.Collector) {
+	iID := strconv.Itoa(ID)
 
+	link := "https://modworkshop.net/mod/" + iID
+	downloadModFromLink(link, c)
 }
 
-func downloadModFromLink(link string) {
+func downloadModFromLink(link string, c *colly.Collector) {
+	title, downloadID := getModInformation(c, link)
 
+	resp := downloadFile(title, downloadID, modsDirectory)
+	unzipFile(resp.Filename, modsDirectory)
+	os.Remove(resp.Filename)
 }
 
 func downloadModFromIndex(index int, c *colly.Collector) {
@@ -355,4 +365,30 @@ func downloadModFromIndex(index int, c *colly.Collector) {
 	unzipFile(resp.Filename, modsDirectory)
 	os.Remove(resp.Filename)
 
+}
+
+func installMod(mod string, c *colly.Collector) {
+	if strings.Contains(mod, "http") {
+		downloadModFromLink(mod, c)
+		return
+	}
+		
+	if len(mod) > 3 && len(mod) < 8 {
+		iMod, err := strconv.Atoi(mod)
+		if err != nil {
+			log.Fatal(err)
+		}
+		downloadModFromID(iMod, c)
+		return
+	}
+
+	if len(mod) < 3 {
+
+		iMod, err := strconv.Atoi(mod)
+		if err != nil {
+				log.Fatal(err)
+		}
+		downloadModFromIndex(iMod, c)
+		return
+	}
 }
