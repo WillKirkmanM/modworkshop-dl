@@ -284,6 +284,7 @@ usage: modworkshop-dl [<command>] [<argument>]
 The following commands are available:
 search, S			The mod to search 				[-S <Name>]
 file, f				The text file containing the mods		[-f <File>]
+install, I			The Link / ModID To Be Installed		[-I <Link / ModID>]	
 		`)
 	} 
 
@@ -379,16 +380,6 @@ func installMod(mod string, c *colly.Collector) {
 			log.Fatal(err)
 		}
 		downloadModFromID(iMod, c)
-		return
-	}
-
-	if len(mod) < 3 {
-
-		iMod, err := strconv.Atoi(mod)
-		if err != nil {
-				log.Fatal(err)
-		}
-		downloadModFromIndex(iMod, c)
 		return
 	}
 }
