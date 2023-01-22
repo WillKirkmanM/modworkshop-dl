@@ -6,16 +6,31 @@
 ## ℹ A Command-Line Utility Tool for Installing Mods from [Mod Workshop](https://modworkshop.net/)
 
 ### Get Started
+#### Install via Searching
+1. Run the tool with the `search` flag followed by your query
+```
+$ modworkshop-dl --search low violence mode
+```
+2. From the list of mods returned, write the index of the mod you would like to download (The mod will now be downloaded into your mods folder)
+3. Launch `PAYDAY 2`!
+#### Install from Link
+1. Run the tool with the `install` flag followed by the link to the mod (The mod will now be downloaded into your mods folder)
+```
+$ modworkshop-dl --install https://modworkshop.net/mod/25629
+```
+2. Launch `PAYDAY 2`! 
+#### Install from File
 1. Create / Open the [`modlist.txt`](https://github.com/WillKirkmanM/modworkshop-dl/blob/main/modlist.txt) file (In the same directory as the executable).
 2. Paste the desired mods in the "`Mods`" header
 3. Paste the desired assets in the "`Assets`" header
 4. Start the tool
 ```
-$ ./modworkshop-dl --file modlist.txt
+$ modworkshop-dl --file modlist.txt
 ```
 5. Launch `PAYDAY 2`!
 
 ### Examples
+Below is an example of the mod list text file that you will be supplied with the `--file` flag. Note that the mods links are under the `Mods` header and the assets links are below the `Assets` header. 
 ```
 # modlist.txt
 Mods
