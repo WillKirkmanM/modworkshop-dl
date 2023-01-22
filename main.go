@@ -9,14 +9,15 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"flag"
 	"fmt"
-	"log"
-	"os"
-	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"os"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 
@@ -36,6 +37,7 @@ var writer = uilive.New()
 var file string
 var search string
 var help bool 
+var install string
 
 type Mod struct {
 	Did                  int         `json:"did"`
@@ -86,25 +88,24 @@ func main() {
 	parseCliArgs(c)
 }
 
-func getModInformation(c *colly.Collector, mod string) (title string, downloadID string) {
+func getModInformation(c *colly.Collector, modLink string) (title string, downloadID string){
 		c.OnHTML("div.flex-grow-1.p-3.d-flex.flex-column.data", func(r *colly.HTMLElement) {
-			title = r.ChildText("[id=title]")
-			downloadButtonText := r.ChildAttr("[id=download-button]", "href")
-			if !strings.Contains(downloadButtonText, "download") {
-				log.Fatal("The Mod You have Requested is Invalid / Does not Have a Download Link. Check the GitHub Page of the Mod!")
-			}
-
-			downloadID = strings.Split(downloadButtonText, "/download/")[1]
+	title = r.ChildText("[id=title]")
+	downloadButtonText := r.ChildAttr("[id=download-button]", "href")
+	if !strings.Contains(downloadButtonText, "download") {
+		log.Fatal("The Mod You have Requested is Invalid / Does not Have a Download Link. Check the GitHub Page of the Mod!")
+	}
+	downloadID = strings.Split(downloadButtonText, "/download/")[1]
 	})
-		err := c.Visit(mod)
-		if err != nil {
-			log.Fatalf("There was an error while running the mods you specified. Please Look in the %s file for any formatting errors. %s\n", file,  err)
-		}		
-	return title, downloadID
+
+	err := c.Visit(modLink)
+	if err != nil {
+		log.Fatalf("There was an error while running the mods you specified. Please Look in the %s file for any formatting errors. %s\n", file,  err)
+	}
+	return title, downloadID	
 }
 
 func downloadFromFile(c *colly.Collector) {
-
 	modsArray, assetsArray := parseText(file)
 
 	endStr := "Done! The "
@@ -179,6 +180,7 @@ func parseText(filePath string) (modsArray []string, assetsArray []string) {
 func downloadFile(title string, downloadID string, destination string) (resp *grab.Response) {
 	downloadLink := apiURL + downloadID + "/download?"
 
+	fmt.Println(downloadLink)
 	resp, err := grab.Get(destination, downloadLink)
 	if err != nil {
 		log.Fatal(err)
@@ -260,11 +262,13 @@ func parseCliArgs(c *colly.Collector) {
 	flag.StringVar(&search, "S", "", "The Mod To Search")
 	flag.BoolVar(&help, "h", false, "View all Commands.")
 	flag.BoolVar(&help, "help", false, "View all Commands.")
+	flag.StringVar(&install, "I", "", "The Mod To Install")
+	flag.StringVar(&install, "install", "", "The Mod To Install")
 	flag.Parse()
 
 	search = strings.Join(os.Args[2:], " ")
     if search != "" && os.Args[1] == "-S" {	
-		searchForMod(search)
+		searchForMod(search, c)
 	}
 
 	if file != "" {
@@ -285,7 +289,7 @@ file, f				The text file containing the mods		[-f <File>]
 	} 
 }
 
-func searchForMod(query string) {
+func searchForMod(query string, c *colly.Collector) {
 	res, err := http.Get(fmt.Sprintf("https://modworkshop.net/mws/api/modsapi.php?count_total=1&query=%s&func=mods&page=1", query))
 	if err != nil {
 			log.Fatal(err)
@@ -318,8 +322,37 @@ func searchForMod(query string) {
 		modResponseObject.Content[i].Views,
 	
 		modResponseObject.Content[i].Timeago,
-	)}
+	)
+}
+	fmt.Println("\n\nWhich mod would you like to install?")
+	var modChoice int 
+	fmt.Scanln(&modChoice)
+
+	downloadModFromIndex(modChoice, c)
+
 	} else {
 		fmt.Println("No mods found")
 	}
+}
+
+func downloadModFromID(ID int) {
+
+}
+
+func downloadModFromLink(link string) {
+
+}
+
+func downloadModFromIndex(index int, c *colly.Collector) {
+	index = index - 1
+
+	title := modResponseObject.Content[index].Name
+	downloadLink := "https://modworkshop.net/mod/" + strconv.Itoa(modResponseObject.Content[index].Did)
+
+	title, downloadID := getModInformation(c, downloadLink)
+
+	resp := downloadFile(title, downloadID, modsDirectory) 
+	unzipFile(resp.Filename, modsDirectory)
+	os.Remove(resp.Filename)
+
 }
