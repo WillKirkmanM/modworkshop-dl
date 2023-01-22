@@ -36,7 +36,7 @@ var writer = uilive.New()
 // CLI Argument Variables
 var file string
 var search string
-var help bool 
+var help bool
 var install string
 
 type Mod struct {
@@ -66,14 +66,14 @@ type Mod struct {
 	PubDateTimestamp     int         `json:"pub_date_timestamp"`
 	IsNsfw               int         `json:"is_nsfw"`
 	UsesDefaultThumbnail interface{} `json:"uses_default_thumbnail"`
-} 
+}
 
 type Response struct {
-	Success       int       `json:"success"`
-	Cache         string    `json:"cache"`
-	Content       []Mod     `json:"content"`
-	Total         int       `json:"total"`
-	PerPage       int       `json:"perpage"`
+	Success int    `json:"success"`
+	Cache   string `json:"cache"`
+	Content []Mod  `json:"content"`
+	Total   int    `json:"total"`
+	PerPage int    `json:"perpage"`
 }
 
 var modResponseObject Response
@@ -88,21 +88,21 @@ func main() {
 	parseCliArgs(c)
 }
 
-func getModInformation(c *colly.Collector, modLink string) (title string, downloadID string){
-		c.OnHTML("div.flex-grow-1.p-3.d-flex.flex-column.data", func(r *colly.HTMLElement) {
-	title = r.ChildText("[id=title]")
-	downloadButtonText := r.ChildAttr("[id=download-button]", "href")
-	if !strings.Contains(downloadButtonText, "download") {
-		log.Fatal("The Mod You have Requested is Invalid / Does not Have a Download Link. Check the GitHub Page of the Mod!")
-	}
-	downloadID = strings.Split(downloadButtonText, "/download/")[1]
+func getModInformation(c *colly.Collector, modLink string) (title string, downloadID string) {
+	c.OnHTML("div.flex-grow-1.p-3.d-flex.flex-column.data", func(r *colly.HTMLElement) {
+		title = r.ChildText("[id=title]")
+		downloadButtonText := r.ChildAttr("[id=download-button]", "href")
+		if !strings.Contains(downloadButtonText, "download") {
+			log.Fatal("The Mod You have Requested is Invalid / Does not Have a Download Link. Check the GitHub Page of the Mod!")
+		}
+		downloadID = strings.Split(downloadButtonText, "/download/")[1]
 	})
 
 	err := c.Visit(modLink)
 	if err != nil {
-		log.Fatalf("There was an error while running the mods you specified. Please Look in the %s file for any formatting errors. %s\n", file,  err)
+		log.Fatalf("There was an error while running the mods you specified. Please Look in the %s file for any formatting errors. %s\n", file, err)
 	}
-	return title, downloadID	
+	return title, downloadID
 }
 
 func downloadFromFile(c *colly.Collector) {
@@ -121,8 +121,10 @@ func downloadFromFile(c *colly.Collector) {
 		}
 	}
 
-	if len(modsArray) > 0 && len(assetsArray) > 0 { endStr += "and " }
-	
+	if len(modsArray) > 0 && len(assetsArray) > 0 {
+		endStr += "and "
+	}
+
 	if len(assetsArray) > 0 {
 		endStr += "Assets "
 		fmt.Println("Downloading Assets!")
@@ -134,7 +136,7 @@ func downloadFromFile(c *colly.Collector) {
 		}
 	}
 	fmt.Println(endStr, "Have Been Downloaded and Installed!")
-	}
+}
 
 func parseText(filePath string) (modsArray []string, assetsArray []string) {
 	file, err := os.Open(filePath)
@@ -167,7 +169,7 @@ func parseText(filePath string) (modsArray []string, assetsArray []string) {
 		}
 
 		if matchedMods {
-			modsArray = append(modsArray, text)				
+			modsArray = append(modsArray, text)
 		}
 
 		if matchedAssets {
@@ -193,24 +195,24 @@ func downloadFile(title string, downloadID string, destination string) (resp *gr
 	defer t.Stop()
 
 	fmt.Fprintf(writer, "Downloading: %s\n", title)
-	Downloading:
-		for {
-			select {
-			case <-t.C:
-				fmt.Println("Downloading")
-				fmt.Fprintf(progress, "Downloaded %v / %v (%.2f%%)\n", resp.BytesComplete(), resp.Size(), 100*resp.Progress())
-			case <-resp.Done:
-				fmt.Fprintf(progress, "The Download has Complete! Took %v\n", resp.Duration())
-				break Downloading
-			}
+Downloading:
+	for {
+		select {
+		case <-t.C:
+			fmt.Println("Downloading")
+			fmt.Fprintf(progress, "Downloaded %v / %v (%.2f%%)\n", resp.BytesComplete(), resp.Size(), 100*resp.Progress())
+		case <-resp.Done:
+			fmt.Fprintf(progress, "The Download has Complete! Took %v\n", resp.Duration())
+			break Downloading
 		}
+	}
 	return resp
 }
 
 func unzipFile(file string, destination string) {
 	switch file[len(file)-3:] {
 	case "zip":
-		err := archiver.DefaultZip.Unarchive(file, destination) 
+		err := archiver.DefaultZip.Unarchive(file, destination)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -222,7 +224,7 @@ func unzipFile(file string, destination string) {
 		}
 		break
 	case "rar":
-		err := archiver.DefaultRar.Unarchive(file, destination) 
+		err := archiver.DefaultRar.Unarchive(file, destination)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -239,19 +241,19 @@ func beforeChecks() {
 
 	if _, err := os.Stat(modsDirectory); os.IsNotExist(err) {
 		os.Mkdir(modsDirectory, os.ModeDir)
-		} else {
-			if err != nil {
-				log.Fatal(err)
-			}
+	} else {
+		if err != nil {
+			log.Fatal(err)
 		}
+	}
 
 	if _, err := os.Stat(assetsDirectory); os.IsNotExist(err) {
 		os.Mkdir(assetsDirectory, os.ModeDir)
-		} else {
-			if err != nil {
-				log.Fatal(err)
-			}
+	} else {
+		if err != nil {
+			log.Fatal(err)
 		}
+	}
 }
 
 func parseCliArgs(c *colly.Collector) {
@@ -265,8 +267,12 @@ func parseCliArgs(c *colly.Collector) {
 	flag.StringVar(&install, "install", "", "The Mod To Install")
 	flag.Parse()
 
-	search = strings.Join(os.Args[2:], " ")
-    if search != "" && os.Args[1] == "-S" {	
+	if len(os.Args) < 0 {
+		help = true
+	}
+
+	if os.Args[1] == "-S" {
+		search = strings.Join(os.Args[2:], " ")
 		searchForMod(search, c)
 	}
 
@@ -276,7 +282,7 @@ func parseCliArgs(c *colly.Collector) {
 
 	if help == true {
 		fmt.Printf(
-		`
+			`
 Modworkshop-dl allows for installing mods with ease.
 
 usage: modworkshop-dl [<command>] [<argument>]
@@ -286,7 +292,7 @@ search, S			The mod to search 				[-S <Name>]
 file, f				The text file containing the mods		[-f <File>]
 install, I			The Link / ModID To Be Installed		[-I <Link / ModID>]	
 		`)
-	} 
+	}
 
 	if install != "" {
 		installMod(install, c)
@@ -296,7 +302,7 @@ install, I			The Link / ModID To Be Installed		[-I <Link / ModID>]
 func searchForMod(query string, c *colly.Collector) {
 	res, err := http.Get(fmt.Sprintf("https://modworkshop.net/mws/api/modsapi.php?count_total=1&query=%s&func=mods&page=1", query))
 	if err != nil {
-			log.Fatal(err)
+		log.Fatal(err)
 	}
 
 	responseData, err := ioutil.ReadAll(res.Body)
@@ -305,34 +311,36 @@ func searchForMod(query string, c *colly.Collector) {
 	// Print Stuff to Out
 
 	if len(modResponseObject.Content) > 0 {
-			for i := 0; i < len(modResponseObject.Content); i++ {
-				if i == 10 { break }
+		for i := 0; i < len(modResponseObject.Content); i++ {
+			if i == 10 {
+				break
+			}
 			fmt.Printf(
-		`
+				`
 		[%v] %s 
 			🧍 %s
 			📍 %s / %s
 			❤ %v 😋 %v 👁️  %v		🕑 %s
 		
-		`, i + 1, 
-		modResponseObject.Content[i].Name, 
-		modResponseObject.Content[i].Submitter,
-	
-		modResponseObject.Content[i].Game,
-		modResponseObject.Content[i].Category,
-	
-		modResponseObject.Content[i].Likes,
-		modResponseObject.Content[i].Downloads,
-		modResponseObject.Content[i].Views,
-	
-		modResponseObject.Content[i].Timeago,
-	)
-}
-	fmt.Println("\n\nWhich mod would you like to install?")
-	var modChoice int 
-	fmt.Scanln(&modChoice)
+		`, i+1,
+				modResponseObject.Content[i].Name,
+				modResponseObject.Content[i].Submitter,
 
-	downloadModFromIndex(modChoice, c)
+				modResponseObject.Content[i].Game,
+				modResponseObject.Content[i].Category,
+
+				modResponseObject.Content[i].Likes,
+				modResponseObject.Content[i].Downloads,
+				modResponseObject.Content[i].Views,
+
+				modResponseObject.Content[i].Timeago,
+			)
+		}
+		fmt.Println("\n\nWhich mod would you like to install?")
+		var modChoice int
+		fmt.Scanln(&modChoice)
+
+		downloadModFromIndex(modChoice, c)
 
 	} else {
 		fmt.Println("No mods found")
@@ -362,7 +370,7 @@ func downloadModFromIndex(index int, c *colly.Collector) {
 
 	title, downloadID := getModInformation(c, downloadLink)
 
-	resp := downloadFile(title, downloadID, modsDirectory) 
+	resp := downloadFile(title, downloadID, modsDirectory)
 	unzipFile(resp.Filename, modsDirectory)
 	os.Remove(resp.Filename)
 
@@ -373,7 +381,7 @@ func installMod(mod string, c *colly.Collector) {
 		downloadModFromLink(mod, c)
 		return
 	}
-		
+
 	if len(mod) > 3 && len(mod) < 8 {
 		iMod, err := strconv.Atoi(mod)
 		if err != nil {
