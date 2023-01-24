@@ -141,7 +141,7 @@ func downloadFromFile(c *colly.Collector) {
 func parseText(filePath string) (modsArray []string, assetsArray []string) {
 	file, err := os.Open(filePath)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("There was an error while parsing the %s. Please check for any possible errors or contact the Developer on GitHub! %s", file.Name(), err )
 	}
 
 	defer file.Close()
@@ -184,7 +184,7 @@ func downloadFile(title string, downloadID string, destination string) (resp *gr
 
 	resp, err := grab.Get(destination, downloadLink)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("There was an error while downloading %s. %s", resp.Filename, err)
 	}
 
 	progress := writer.Newline()
@@ -214,19 +214,19 @@ func unzipFile(file string, destination string) {
 	case "zip":
 		err := archiver.DefaultZip.Unarchive(file, destination)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("There was an error while unzipping the Zip File %s", err)
 		}
 		break
 	case "tar":
 		err := archiver.DefaultTar.Unarchive(file, destination)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("There was an error while unzipping the Tar File %s", err)
 		}
 		break
 	case "rar":
 		err := archiver.DefaultRar.Unarchive(file, destination)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("There was an error while unzipping the Rar File %s", err)
 		}
 		break
 	}
@@ -243,7 +243,7 @@ func beforeChecks() {
 		os.Mkdir(modsDirectory, os.ModeDir)
 	} else {
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("There was an error while creating the Mods directory! %s", err)
 		}
 	}
 
@@ -251,7 +251,7 @@ func beforeChecks() {
 		os.Mkdir(assetsDirectory, os.ModeDir)
 	} else {
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("There was an error while creating the Assets directory! %s", err)
 		}
 	}
 }
@@ -299,7 +299,7 @@ install, I			The Link / ModID To Be Installed		[-I <Link / ModID>]
 func searchForMod(query string, c *colly.Collector) {
 	res, err := http.Get(fmt.Sprintf("https://modworkshop.net/mws/api/modsapi.php?count_total=1&query=%s&func=mods&page=1", query))
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("There was an error while fetching the API! Try Again in 5 Minutes or Contact the Developer on GitHub! %s", err)
 	}
 
 	responseData, err := ioutil.ReadAll(res.Body)
@@ -382,7 +382,7 @@ func installMod(mod string, c *colly.Collector) {
 	if len(mod) > 3 && len(mod) < 8 {
 		iMod, err := strconv.Atoi(mod)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("There was a conversion error! Please Contact the Developer on GitHub %s", err)
 		}
 		downloadModFromID(iMod, c)
 		return
