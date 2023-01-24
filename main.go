@@ -362,6 +362,11 @@ func downloadModFromLink(link string, c *colly.Collector) {
 func downloadModFromIndex(index int, c *colly.Collector) {
 	index = index - 1
 
+	if index > modResponseObject.Total {
+		index = index + 1
+		log.Fatalf("The index %d is out the bounds! Select a Mod Provided", index)
+	} 
+
 	title := modResponseObject.Content[index].Name
 	downloadLink := "https://modworkshop.net/mod/" + strconv.Itoa(modResponseObject.Content[index].Did)
 
