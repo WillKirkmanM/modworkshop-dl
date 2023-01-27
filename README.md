@@ -24,7 +24,7 @@ $ modworkshop-dl --install https://modworkshop.net/mod/25629
 ```
 2. Launch `PAYDAY 2`! 
 #### Install from File
-1. Create / Open the [`modlist.txt`](https://github.com/WillKirkmanM/modworkshop-dl/blob/main/modlist.txt) file (In the same directory as the executable).
+1. Create / Open the `modlist.txt` file (In the same directory as the executable).
 2. Paste the desired mods in the "`Mods`" header
 3. Paste the desired assets in the "`Assets`" header
 4. Start the tool
