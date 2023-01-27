@@ -63,10 +63,51 @@ install, I			            The Link / ModID To Be Installed		        [-I <Link / M
 ```
 
 ### Supported Games
-| Game    	| Windows 	| Mac 	| Linux 	|
-|---------	|---------	|-----	|-------	|
-| PAYDAY 2 	| 🟩       	| 🟥   	| 🟥     |
-
+| Game                                            	| Windows 	| Mac 	| Linux 	| Mod Install Path 	|
+|-------------------------------------------------	|---------	|-----	|-------	|------------------	|
+| Payday 2                                        	| 🟩       	| 🟥   	| 🟥     	| 🟩                	|
+| Noita                                           	| 🟩       	| 🟥   	| 🟥     	| 🟩                	|
+| Enter the Gungeon                               	| 🟩       	| 🟥   	| 🟥     	| 🟩                	|
+| Payday: The Heist                               	| 🟩       	| 🟥   	| 🟥     	| 🟩                	|
+| Final Fantasy XV                                	| 🟩       	| 🟥   	| 🟥     	| 🟥                	|
+| Stolen Realm                                    	| 🟩       	| 🟥   	| 🟥     	| 🟥                	|
+| RAID: World War II                              	| 🟩       	| 🟥   	| 🟥     	| 🟥                	|
+| Aurora                                          	| 🟩       	| 🟥   	| 🟥     	| 🟥                	|
+| Zuma                                            	| 🟩       	| 🟥   	| 🟥     	| 🟥                	|
+| Luxor                                           	| 🟩       	| 🟥   	| 🟥     	| 🟥                	|
+| VRChat                                          	| 🟩       	| 🟥   	| 🟥     	| 🟩                	|
+| Left 4 Dead 2                                   	| 🟩       	| 🟥   	| 🟥     	| 🟩                	|
+| Hitman 3                                        	| 🟩       	| 🟥   	| 🟥     	| 🟥                	|
+| Monster Sanctuary                               	| 🟩       	| 🟥   	| 🟥     	| 🟩                	|
+| Fallout 4                                       	| 🟩       	| 🟥   	| 🟥     	| 🟩                	|
+| Teardown                                        	| 🟩       	| 🟥   	| 🟥     	| 🟩                	|
+| Black Mesa                                      	| 🟩       	| 🟥   	| 🟥     	| 🟥                	|
+| Yakuza Kiwami 2                                 	| 🟩       	| 🟥   	| 🟥     	| 🟥                	|
+| Hotline Miami 2: Wrong Number                   	| 🟩       	| 🟥   	| 🟥     	| 🟩                	|
+| Friday Night Funkin'                            	| 🟩       	| 🟥   	| 🟥     	| 🟥                	|
+| Hotdogs, Horseshoes & Hand Grenades             	| 🟩       	| 🟥   	| 🟥     	| 🟥                	|
+| Yakuza Kiwami 1                                 	| 🟩       	| 🟥   	| 🟥     	| 🟥                	|
+| 100% Orange Juice                               	| 🟩       	| 🟥   	| 🟥     	| 🟩                	|
+| Hyperdimension Neptunia Re;Birth2               	| 🟩       	| 🟥   	| 🟥     	| 🟥                	|
+| Non-games / Plugins                             	| 🟩       	| 🟥   	| 🟥     	| 🟥                	|
+| Yakuza 0                                        	| 🟩       	| 🟥   	| 🟥     	| 🟥                	|
+| One Step From Eden                              	| 🟩       	| 🟥   	| 🟥     	| 🟥                	|
+| OVERKILL's The Walking Dead                     	| 🟩       	| 🟥   	| 🟥     	| 🟥                	|
+| The Elder Scrolls V: Skyrim - Legendary Edition 	| 🟩       	| 🟥   	| 🟥     	| 🟩                	|
+| SCP: Containment Breach                         	| 🟩       	| 🟥   	| 🟥     	| 🟥                	|
+| Fallout: New Vegas                              	| 🟩       	| 🟥   	| 🟥     	| 🟩                	|
+| OneShot                                         	| 🟩       	| 🟥   	| 🟥     	| 🟥                	|
+| SteamVR                                         	| 🟩       	| 🟥   	| 🟥     	| 🟩                	|
+| Criminal Girls: Invite Only                     	| 🟩       	| 🟥   	| 🟥     	| 🟥                	|
+| Gal*Gun: Double Peace                           	| 🟩       	| 🟥   	| 🟥     	| 🟩                	|
+| Warhammer: End Times - Vermintide               	| 🟩       	| 🟥   	| 🟥     	| 🟩                	|
+| Tales of Berseria                               	| 🟩       	| 🟥   	| 🟥     	| 🟥                	|
+| Team Fortress 2                                 	| 🟩       	| 🟥   	| 🟥     	| 🟥                	|
+| Hyperdimension Neptunia Re;Birth3               	| 🟩       	| 🟥   	| 🟥     	| 🟥                	|
+| Hyperdimension Neptunia Re;Birth1               	| 🟩       	| 🟥   	| 🟥     	| 🟥                	|
+| Metal Gear Solid V: The Phantom Pain            	| 🟩       	| 🟥   	| 🟥     	| 🟥                	|
+| Skyrim Special Edition                          	| 🟩       	| 🟥   	| 🟥     	| 🟥                	|
+| Forspoken                                       	| 🟩       	| 🟥   	| 🟥     	| 🟥                	|| 
 ### Building
 To build the files run the command:
 ```
