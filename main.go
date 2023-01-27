@@ -16,7 +16,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -76,11 +75,55 @@ type Response struct {
 	PerPage int    `json:"perpage"`
 }
 
+var games = map[string] string {
+	"Payday 2": `C:\Program Files (x86)\Steam\SteamApps\common\PAYDAY 2\mods`,
+	"Noita": `C:\Program Files (x86)\Steam\SteamApps\common\Noita\mods`, 
+	"Enter the Gungeon": `C:\Program Files (x86)\Steam\steamapps\common\Enter the Gungeon\Mods`,
+	"Payday: The Heist": `C:\Program Files (x86)\Steam\SteamApps\common\PAYDAY The Heist\mods`,
+	"Final Fantasy XV": ".",
+	"Stolen Realm": ".",
+	"RAID: World War II": ".",
+	"Aurora": ".",
+	"Zuma": ".",
+	"Luxor": ".",
+	"VRChat": `C:\Program Files (x86)\Steam\SteamApps\common\VRChat\mods`,
+	"Left 4 Dead 2": `C:\Program Files (x86)\Steam\SteamApps\common\Left 4 Ded 2\left4dead2\addons`,
+	"Hitman 3": ".",
+	"Monster Sanctuary": `C:\Program Files (x86)\Steam\SteamApps\common\Monster Sanctuary\BapInEx\plugins`,
+	"Fallout 4": `C:\Program Files (x86)\Steam\SteamApps\common\Fallout 4\Data`,
+	"Teardown": `C:\Program Files (x86)\Steam\SteamApps\common\Teardown\data`,
+	"Black Mesa": ".",
+	"Yakuza Kiwami 2": ".",
+	"Hotline Miami 2: Wrong Number": `C:\Program Files (x86)\Steam\SteamApps\common\Hotline Miami 2\mods`,
+	"Friday Night Funkin'": ".",
+	"Hotdogs, Horseshoes & Hand Grenades": ".",
+	"Yakuza Kiwami 1": ".",
+	"100% Orange Juice": `C:\Program Files (x86)\Steam\SteamApps\common\100% Orange Juice\mods`,
+	"Hyperdimension Neptunia Re;Birth2": "",
+	"Non-games / Plugins": ".",
+	"Yakuza 0": ".",
+	"One Step From Eden": ".",
+	"OVERKILL's The Walking Dead": ".",
+	"The Elder Scrolls V: Skyrim - Legendary Edition": `C:\Program Files (x86)\Steam\SteamApps\common\Skyrim\Data`,
+	"SCP: Containment Breach": ".",
+	"Fallout: New Vegas": `C:\Program Files (x86)\Steam\SteamApps\common\Fallout New Vegas\Data`,
+	"OneShot": ".",
+	"SteamVR": `C:\Program Files (x86)\Steam\SteamApps\common\SteamVR\bin\win64`,
+	"Criminal Girls: Invite Only": ".",
+	"Gal*Gun: Double Peace": `C:\Program Files (x86)\Steam\SteamApps\common\GalGun Double Peace`,
+	"Warhammer: End Times - Vermintide": `C:\Program Files (x86)\Steam\SteamApps\common\Warhammer End Times Vermintide\binaries\mods`,
+	"Tales of Berseria": ".",
+	"Team Fortress 2": `C:\Program Files (x86)\Steam\SteamApps\common\Team Fortress 2\tf\custom`,
+	"Hyperdimension Neptunia Re;Birth3": ".",
+	"Hyperdimension Neptunia Re;Birth1": ".",
+	"Metal Gear Solid V: The Phantom Pain": ".",
+	"Skyrim Special Edition": ".",
+	"Forspoken": ".",
+}
+
 var modResponseObject Response
 
 func main() {
-	beforeChecks()
-
 	c := colly.NewCollector(
 		colly.AllowedDomains(baseURL),
 	)
@@ -107,6 +150,10 @@ func getModInformation(c *colly.Collector, modLink string) (title string, downlo
 
 func downloadFromFile(c *colly.Collector) {
 	modsArray, assetsArray := parseText(file)
+	ensureDir(`C:\Program Files (x86)\Steam\steamapps\common\PAYDAY 2`)
+
+	modsDirectory = `C:\Program Files (x86)\Steam\steamapps\common\PAYDAY 2\mods`
+	assetsDirectory = `C:\Program Files (x86)\Steam\steamapps\common\PAYDAY 2\mods\assets`
 
 	endStr := "Done! The "
 
@@ -180,6 +227,7 @@ func parseText(filePath string) (modsArray []string, assetsArray []string) {
 }
 
 func downloadFile(title string, downloadID string, destination string) (resp *grab.Response) {
+
 	downloadLink := apiURL + downloadID + "/download?"
 
 	resp, err := grab.Get(destination, downloadLink)
@@ -229,30 +277,6 @@ func unzipFile(file string, destination string) {
 			log.Fatalf("There was an error while unzipping the Rar File %s", err)
 		}
 		break
-	}
-}
-
-func beforeChecks() {
-	switch runtime.GOOS {
-	case "windows":
-		modsDirectory = `C:\Program Files (x86)\Steam\steamapps\common\PAYDAY 2\mods`
-		assetsDirectory = `C:\Program Files (x86)\Steam\steamapps\common\PAYDAY 2\mods\assets`
-	}
-
-	if _, err := os.Stat(modsDirectory); os.IsNotExist(err) {
-		os.Mkdir(modsDirectory, os.ModeDir)
-	} else {
-		if err != nil {
-			log.Fatalf("There was an error while creating the Mods directory! %s", err)
-		}
-	}
-
-	if _, err := os.Stat(assetsDirectory); os.IsNotExist(err) {
-		os.Mkdir(assetsDirectory, os.ModeDir)
-	} else {
-		if err != nil {
-			log.Fatalf("There was an error while creating the Assets directory! %s", err)
-		}
 	}
 }
 
@@ -372,10 +396,14 @@ func downloadModFromIndex(index int, c *colly.Collector) {
 
 	title, downloadID := getModInformation(c, downloadLink)
 
-	resp := downloadFile(title, downloadID, modsDirectory)
-	unzipFile(resp.Filename, modsDirectory)
-	os.Remove(resp.Filename)
+	gameName := modResponseObject.Content[index].Game
+	gameDir := games[gameName]
 
+	ensureDir(gameDir)
+
+	resp := downloadFile(title, downloadID, gameDir)
+	unzipFile(resp.Filename, gameDir)
+	os.Remove(resp.Filename)
 }
 
 func installMod(mod string, c *colly.Collector) {
@@ -392,4 +420,21 @@ func installMod(mod string, c *colly.Collector) {
 		downloadModFromID(iMod, c)
 		return
 	}
+}
+
+func ensureDir(dirPath string) {
+	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
+		os.MkdirAll(dirPath, os.ModeSticky | os.ModePerm)
+	} else {
+		if err != nil {
+			log.Fatalf("There was an error ensuring that %s exists! %s\n", dirPath, err)
+		}
+		return
+	}
+
+	if strings.Contains(dirPath, "PAYDAY 2") {
+		ensureDir(`C:\Program Files (x86)\Steam\steamapps\common\PAYDAY 2\mods`)
+		ensureDir(`C:\Program Files (x86)\Steam\steamapps\common\PAYDAY 2\mods\assets`)
+	}
+	ensureDir(dirPath)
 }
