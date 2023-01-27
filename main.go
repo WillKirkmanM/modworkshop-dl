@@ -99,7 +99,7 @@ var games = map[string] string {
 	"Hotdogs, Horseshoes & Hand Grenades": ".",
 	"Yakuza Kiwami 1": ".",
 	"100% Orange Juice": `C:\Program Files (x86)\Steam\SteamApps\common\100% Orange Juice\mods`,
-	"Hyperdimension Neptunia Re;Birth2": "",
+	"Hyperdimension Neptunia Re;Birth2": ".",
 	"Non-games / Plugins": ".",
 	"Yakuza 0": ".",
 	"One Step From Eden": ".",
