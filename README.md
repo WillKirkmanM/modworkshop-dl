@@ -47,7 +47,7 @@ https://modworkshop.net/mod/41001
 https://modworkshop.net/mod/40586
 ```
 ### Usage
-See the usage by running
+See the usage by running:
 ```
 $ modworkshop-dl --help
 ```
