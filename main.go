@@ -10,6 +10,7 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -75,50 +76,50 @@ type Response struct {
 	PerPage int    `json:"perpage"`
 }
 
-var games = map[string] string {
-	"Payday 2": `C:\Program Files (x86)\Steam\SteamApps\common\PAYDAY 2\mods`,
-	"Noita": `C:\Program Files (x86)\Steam\SteamApps\common\Noita\mods`, 
-	"Enter the Gungeon": `C:\Program Files (x86)\Steam\steamapps\common\Enter the Gungeon\Mods`,
-	"Payday: The Heist": `C:\Program Files (x86)\Steam\SteamApps\common\PAYDAY The Heist\mods`,
-	"Final Fantasy XV": ".",
-	"Stolen Realm": ".",
-	"RAID: World War II": ".",
-	"Aurora": ".",
-	"Zuma": ".",
-	"Luxor": ".",
-	"VRChat": `C:\Program Files (x86)\Steam\SteamApps\common\VRChat\mods`,
-	"Left 4 Dead 2": `C:\Program Files (x86)\Steam\SteamApps\common\Left 4 Ded 2\left4dead2\addons`,
-	"Hitman 3": ".",
-	"Monster Sanctuary": `C:\Program Files (x86)\Steam\SteamApps\common\Monster Sanctuary\BapInEx\plugins`,
-	"Fallout 4": `C:\Program Files (x86)\Steam\SteamApps\common\Fallout 4\Data`,
-	"Teardown": `C:\Program Files (x86)\Steam\SteamApps\common\Teardown\data`,
-	"Black Mesa": ".",
-	"Yakuza Kiwami 2": ".",
-	"Hotline Miami 2: Wrong Number": `C:\Program Files (x86)\Steam\SteamApps\common\Hotline Miami 2\mods`,
-	"Friday Night Funkin'": ".",
+var games = map[string]string{
+	"Payday 2":                            `C:\Program Files (x86)\Steam\SteamApps\common\PAYDAY 2\mods`,
+	"Noita":                               `C:\Program Files (x86)\Steam\SteamApps\common\Noita\mods`,
+	"Enter the Gungeon":                   `C:\Program Files (x86)\Steam\steamapps\common\Enter the Gungeon\Mods`,
+	"Payday: The Heist":                   `C:\Program Files (x86)\Steam\SteamApps\common\PAYDAY The Heist\mods`,
+	"Final Fantasy XV":                    ".",
+	"Stolen Realm":                        ".",
+	"RAID: World War II":                  ".",
+	"Aurora":                              ".",
+	"Zuma":                                ".",
+	"Luxor":                               ".",
+	"VRChat":                              `C:\Program Files (x86)\Steam\SteamApps\common\VRChat\mods`,
+	"Left 4 Dead 2":                       `C:\Program Files (x86)\Steam\SteamApps\common\Left 4 Ded 2\left4dead2\addons`,
+	"Hitman 3":                            ".",
+	"Monster Sanctuary":                   `C:\Program Files (x86)\Steam\SteamApps\common\Monster Sanctuary\BapInEx\plugins`,
+	"Fallout 4":                           `C:\Program Files (x86)\Steam\SteamApps\common\Fallout 4\Data`,
+	"Teardown":                            `C:\Program Files (x86)\Steam\SteamApps\common\Teardown\data`,
+	"Black Mesa":                          ".",
+	"Yakuza Kiwami 2":                     ".",
+	"Hotline Miami 2: Wrong Number":       `C:\Program Files (x86)\Steam\SteamApps\common\Hotline Miami 2\mods`,
+	"Friday Night Funkin'":                ".",
 	"Hotdogs, Horseshoes & Hand Grenades": ".",
-	"Yakuza Kiwami 1": ".",
-	"100% Orange Juice": `C:\Program Files (x86)\Steam\SteamApps\common\100% Orange Juice\mods`,
-	"Hyperdimension Neptunia Re;Birth2": ".",
-	"Non-games / Plugins": ".",
-	"Yakuza 0": ".",
-	"One Step From Eden": ".",
-	"OVERKILL's The Walking Dead": ".",
+	"Yakuza Kiwami 1":                     ".",
+	"100% Orange Juice":                   `C:\Program Files (x86)\Steam\SteamApps\common\100% Orange Juice\mods`,
+	"Hyperdimension Neptunia Re;Birth2":   ".",
+	"Non-games / Plugins":                 ".",
+	"Yakuza 0":                            ".",
+	"One Step From Eden":                  ".",
+	"OVERKILL's The Walking Dead":         ".",
 	"The Elder Scrolls V: Skyrim - Legendary Edition": `C:\Program Files (x86)\Steam\SteamApps\common\Skyrim\Data`,
-	"SCP: Containment Breach": ".",
-	"Fallout: New Vegas": `C:\Program Files (x86)\Steam\SteamApps\common\Fallout New Vegas\Data`,
-	"OneShot": ".",
-	"SteamVR": `C:\Program Files (x86)\Steam\SteamApps\common\SteamVR\bin\win64`,
-	"Criminal Girls: Invite Only": ".",
-	"Gal*Gun: Double Peace": `C:\Program Files (x86)\Steam\SteamApps\common\GalGun Double Peace`,
-	"Warhammer: End Times - Vermintide": `C:\Program Files (x86)\Steam\SteamApps\common\Warhammer End Times Vermintide\binaries\mods`,
-	"Tales of Berseria": ".",
-	"Team Fortress 2": `C:\Program Files (x86)\Steam\SteamApps\common\Team Fortress 2\tf\custom`,
-	"Hyperdimension Neptunia Re;Birth3": ".",
-	"Hyperdimension Neptunia Re;Birth1": ".",
-	"Metal Gear Solid V: The Phantom Pain": ".",
-	"Skyrim Special Edition": ".",
-	"Forspoken": ".",
+	"SCP: Containment Breach":                         ".",
+	"Fallout: New Vegas":                              `C:\Program Files (x86)\Steam\SteamApps\common\Fallout New Vegas\Data`,
+	"OneShot":                                         ".",
+	"SteamVR":                                         `C:\Program Files (x86)\Steam\SteamApps\common\SteamVR\bin\win64`,
+	"Criminal Girls: Invite Only":                     ".",
+	"Gal*Gun: Double Peace":                           `C:\Program Files (x86)\Steam\SteamApps\common\GalGun Double Peace`,
+	"Warhammer: End Times - Vermintide":               `C:\Program Files (x86)\Steam\SteamApps\common\Warhammer End Times Vermintide\binaries\mods`,
+	"Tales of Berseria":                               ".",
+	"Team Fortress 2":                                 `C:\Program Files (x86)\Steam\SteamApps\common\Team Fortress 2\tf\custom`,
+	"Hyperdimension Neptunia Re;Birth3":               ".",
+	"Hyperdimension Neptunia Re;Birth1":               ".",
+	"Metal Gear Solid V: The Phantom Pain":            ".",
+	"Skyrim Special Edition":                          ".",
+	"Forspoken":                                       ".",
 }
 
 var modResponseObject Response
@@ -148,12 +149,15 @@ func getModInformation(c *colly.Collector, modLink string) (title string, downlo
 	return title, downloadID
 }
 
-func downloadFromFile(c *colly.Collector) {
-	modsArray, assetsArray := parseText(file)
-	ensureDir(`C:\Program Files (x86)\Steam\steamapps\common\PAYDAY 2`)
+func downloadFromFile(c *colly.Collector) error {
+	modsArray, assetsArray, err := parseText(file)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	modsDirectory = `C:\Program Files (x86)\Steam\steamapps\common\PAYDAY 2\mods`
-	assetsDirectory = `C:\Program Files (x86)\Steam\steamapps\common\PAYDAY 2\mods\assets`
+	modsDirectory = games["Payday 2"]
+	assetsDirectory = games["Payday 2"] + `\assets`
+	fmt.Println(assetsDirectory)
 
 	endStr := "Done! The "
 
@@ -162,7 +166,10 @@ func downloadFromFile(c *colly.Collector) {
 		fmt.Println("Downloading Mods!")
 		for i := 0; i < len(modsArray); i++ {
 			title, downloadID := getModInformation(c, modsArray[i])
-			resp := downloadFile(title, downloadID, modsDirectory)
+			resp, err := downloadFile(title, downloadID, modsDirectory)
+			if err != nil {
+				return nil
+			}
 			unzipFile(resp.Filename, modsDirectory)
 			os.Remove(resp.Filename)
 		}
@@ -177,18 +184,23 @@ func downloadFromFile(c *colly.Collector) {
 		fmt.Println("Downloading Assets!")
 		for i := 0; i < len(assetsArray); i++ {
 			title, downloadID := getModInformation(c, assetsArray[i])
-			resp := downloadFile(title, downloadID, assetsDirectory)
+			resp, err := downloadFile(title, downloadID, assetsDirectory)
+			if err != nil {
+				return nil
+			}
 			unzipFile(resp.Filename, assetsDirectory)
 			os.Remove(resp.Filename)
 		}
 	}
 	fmt.Println(endStr, "Have Been Downloaded and Installed!")
+	return nil
 }
 
-func parseText(filePath string) (modsArray []string, assetsArray []string) {
+func parseText(filePath string) (modsArray []string, assetsArray []string, error error) {
 	file, err := os.Open(filePath)
 	if err != nil {
-		log.Fatalf("There was an error while parsing the %s. Please check for any possible errors or contact the Developer on GitHub! %s", file.Name(), err )
+		log.Fatalf("There was an error while parsing the %s. Please check for any possible errors or contact the Developer on GitHub! %s", file.Name(), err)
+		return nil, nil, errors.New("Error While Parsing File")
 	}
 
 	defer file.Close()
@@ -223,16 +235,17 @@ func parseText(filePath string) (modsArray []string, assetsArray []string) {
 			assetsArray = append(assetsArray, text)
 		}
 	}
-	return modsArray, assetsArray
+	return modsArray, assetsArray, nil
 }
 
-func downloadFile(title string, downloadID string, destination string) (resp *grab.Response) {
+func downloadFile(title string, downloadID string, destination string) (resp *grab.Response, error error) {
 
 	downloadLink := apiURL + downloadID + "/download?"
 
 	resp, err := grab.Get(destination, downloadLink)
 	if err != nil {
 		log.Fatalf("There was an error while downloading %s. %s", resp.Filename, err)
+		return nil, errors.New("Error While Downloading The File")
 	}
 
 	progress := writer.Newline()
@@ -254,7 +267,7 @@ Downloading:
 			break Downloading
 		}
 	}
-	return resp
+	return resp, nil
 }
 
 func unzipFile(file string, destination string) {
@@ -291,8 +304,8 @@ func parseCliArgs(c *colly.Collector) {
 	flag.StringVar(&install, "install", "", "The Mod To Install")
 	flag.Parse()
 
-	helpMsg := 
-			`
+	helpMsg :=
+		`
 Modworkshop-dl allows for installing mods with ease.
 
 usage: modworkshop-dl [<command>] [<argument>]
@@ -308,8 +321,8 @@ install, I			The Link / ModID To Be Installed		[-I <Link / ModID>]
 			fmt.Println("none")
 		}
 		if os.Args[1] == "-S" {
-				search = strings.Join(os.Args[2:], " ")
-				searchForMod(search, c)
+			search = strings.Join(os.Args[2:], " ")
+			searchForMod(search, c)
 		}
 
 		if file != "" {
@@ -319,9 +332,10 @@ install, I			The Link / ModID To Be Installed		[-I <Link / ModID>]
 		if install != "" {
 			installMod(install, c)
 		}
-			if help == true {
+
+		if help == true {
 			fmt.Printf(helpMsg)
-			}
+		}
 	} else {
 		fmt.Println(helpMsg)
 	}
@@ -348,7 +362,7 @@ func searchForMod(query string, c *colly.Collector) {
 		[%v] %s 
 			🧍 %s
 			📍 %s / %s
-			❤ %v 😋 %v 👁️  %v		🕑 %s
+			❤ %v 😋 %v 👁️ %v		🕑 %s
 		
 		`, i+1,
 				modResponseObject.Content[i].Name,
@@ -375,19 +389,27 @@ func searchForMod(query string, c *colly.Collector) {
 	}
 }
 
-func downloadModFromID(ID int, c *colly.Collector) {
+func downloadModFromID(ID int, c *colly.Collector, destination string)  error {
 	iID := strconv.Itoa(ID)
 
 	link := "https://modworkshop.net/mod/" + iID
-	downloadModFromLink(link, c)
+	err := downloadModFromLink(link, c, destination)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func downloadModFromLink(link string, c *colly.Collector) {
+func downloadModFromLink(link string, c *colly.Collector, destination string) error {
 	title, downloadID := getModInformation(c, link)
 
-	resp := downloadFile(title, downloadID, modsDirectory)
-	unzipFile(resp.Filename, modsDirectory)
+	resp, err := downloadFile(title, downloadID, destination)
+	if err != nil {
+		return err
+	}
+	unzipFile(resp.Filename, destination)
 	os.Remove(resp.Filename)
+	return nil
 }
 
 func downloadModFromIndex(index int, c *colly.Collector) {
@@ -396,7 +418,7 @@ func downloadModFromIndex(index int, c *colly.Collector) {
 	if index > modResponseObject.Total {
 		index = index + 1
 		log.Fatalf("The index %d is out the bounds! Select a Mod Provided", index)
-	} 
+	}
 
 	title := modResponseObject.Content[index].Name
 	downloadLink := "https://modworkshop.net/mod/" + strconv.Itoa(modResponseObject.Content[index].Did)
@@ -408,14 +430,17 @@ func downloadModFromIndex(index int, c *colly.Collector) {
 
 	ensureDir(gameDir)
 
-	resp := downloadFile(title, downloadID, gameDir)
+	resp, err := downloadFile(title, downloadID, gameDir)
+	if err != nil {
+		return
+	}
 	unzipFile(resp.Filename, gameDir)
 	os.Remove(resp.Filename)
 }
 
 func installMod(mod string, c *colly.Collector) {
 	if strings.Contains(mod, "http") {
-		downloadModFromLink(mod, c)
+		downloadModFromLink(mod, c, modsDirectory)
 		return
 	}
 
@@ -424,19 +449,20 @@ func installMod(mod string, c *colly.Collector) {
 		if err != nil {
 			log.Fatalf("There was a conversion error! Please Contact the Developer on GitHub %s", err)
 		}
-		downloadModFromID(iMod, c)
+		downloadModFromID(iMod, c, modsDirectory)
 		return
 	}
 }
 
-func ensureDir(dirPath string) {
+func ensureDir(dirPath string) error {
 	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
-		os.MkdirAll(dirPath, os.ModeSticky | os.ModePerm)
+		os.MkdirAll(dirPath, os.ModeSticky|os.ModePerm)
 	} else {
 		if err != nil {
 			log.Fatalf("There was an error ensuring that %s exists! %s\n", dirPath, err)
+			return errors.New("The Directory Could Not Be Created!")
 		}
-		return
+		return nil
 	}
 
 	if strings.Contains(dirPath, "PAYDAY 2") {
@@ -444,4 +470,5 @@ func ensureDir(dirPath string) {
 		ensureDir(`C:\Program Files (x86)\Steam\steamapps\common\PAYDAY 2\mods\assets`)
 	}
 	ensureDir(dirPath)
+	return nil
 }
