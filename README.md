@@ -109,15 +109,24 @@ install, I			            The Link / ModID To Be Installed		        [-I <Link / M
 | Skyrim Special Edition                          	| 🟩       	| 🟥   	| 🟥     	| 🟥                	|
 | Forspoken                                       	| 🟩       	| 🟥   	| 🟥     	| 🟥                	|| 
 ### Building
-To build the files run the command:
+To build the files, run the command:
 ```
-go build
+$ go build
 ```
 If the above does not work try the command:
 ```
-go install
+$ go install
 ```
 
+### Testing
+To Test the Tool, Run the command:
+```
+$ go test
+```
+If you would like code coverage, run:
+```
+$ go test -cover
+```
 
   ### How does it work?
   - Web Scraping with [Colly](http://go-colly.org/)
