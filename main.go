@@ -291,21 +291,7 @@ func parseCliArgs(c *colly.Collector) {
 	flag.StringVar(&install, "install", "", "The Mod To Install")
 	flag.Parse()
 
-	if len(os.Args) > 1 {
-	if os.Args[1] == "-S" {
-			search = strings.Join(os.Args[2:], " ")
-			searchForMod(search, c)
-	}
-
-	if file != "" {
-		downloadFromFile(c)
-	}
-
-	if install != "" {
-		installMod(install, c)
-	}
-		if help == true {
-		fmt.Printf(
+	helpMsg := 
 			`
 Modworkshop-dl allows for installing mods with ease.
 
@@ -315,9 +301,30 @@ The following commands are available:
 search, S			The mod to search 				[-S <Name>]
 file, f				The text file containing the mods		[-f <File>]
 install, I			The Link / ModID To Be Installed		[-I <Link / ModID>]	
-		`)
+		`
+
+	if len(os.Args) > 1 {
+		if os.Args[1] == "" {
+			fmt.Println("none")
 		}
-}
+		if os.Args[1] == "-S" {
+				search = strings.Join(os.Args[2:], " ")
+				searchForMod(search, c)
+		}
+
+		if file != "" {
+			downloadFromFile(c)
+		}
+
+		if install != "" {
+			installMod(install, c)
+		}
+			if help == true {
+			fmt.Printf(helpMsg)
+			}
+	} else {
+		fmt.Println(helpMsg)
+	}
 }
 
 func searchForMod(query string, c *colly.Collector) {
