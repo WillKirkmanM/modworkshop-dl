@@ -108,6 +108,9 @@ install, I			            The Link / ModID To Be Installed		        [-I <Link / M
 | Metal Gear Solid V: The Phantom Pain            	| 🟩       	| 🟥   	| 🟥     	| 🟥                	|
 | Skyrim Special Edition                          	| 🟩       	| 🟥   	| 🟥     	| 🟥                	|
 | Forspoken                                       	| 🟩       	| 🟥   	| 🟥     	| 🟥                	|| 
+
+*A Red Square (🟥) in the `Mod Install Path` section of the table indicates the mod will be downloaded and unzipped in the current directory of the terminal.*
+
 ### Building
 To build the files, run the command:
 ```
