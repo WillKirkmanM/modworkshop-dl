@@ -10,7 +10,6 @@ package main
 import (
 	"bufio"
 	"encoding/json"
-	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -197,10 +196,11 @@ func downloadFromFile(c *colly.Collector) error {
 }
 
 func parseText(filePath string) (modsArray []string, assetsArray []string, error error) {
-	file, err := os.Open(filePath)
+	if doesExist(filePath) {
+		file, err := os.Open(filePath)
 	if err != nil {
 		log.Fatalf("There was an error while parsing the %s. Please check for any possible errors or contact the Developer on GitHub! %s", file.Name(), err)
-		return nil, nil, errors.New("Error While Parsing File")
+		return nil, nil, fmt.Errorf("Error While Parsing %s", filePath)
 	}
 
 	defer file.Close()
@@ -236,6 +236,15 @@ func parseText(filePath string) (modsArray []string, assetsArray []string, error
 		}
 	}
 	return modsArray, assetsArray, nil
+	}
+	return nil, nil, fmt.Errorf("The File %s Does Not Exist!", filePath) 
+}
+
+func doesExist(filePath string) bool {
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		return false
+	} 
+	return true
 }
 
 func downloadFile(title string, downloadID string, destination string) (resp *grab.Response, error error) {
@@ -244,8 +253,7 @@ func downloadFile(title string, downloadID string, destination string) (resp *gr
 
 	resp, err := grab.Get(destination, downloadLink)
 	if err != nil {
-		log.Fatalf("There was an error while downloading %s. %s", resp.Filename, err)
-		return nil, errors.New("Error While Downloading The File")
+		return nil, fmt.Errorf("Error While Downloading The %s. %s", resp.Filename, err)
 	}
 
 	progress := writer.Newline()
@@ -320,19 +328,21 @@ install, I			The Link / ModID To Be Installed		[-I <Link / ModID>]
 		if os.Args[1] == "" {
 			fmt.Println("none")
 		}
-		if os.Args[1] == "-S" {
+
+		if os.Args[1] == "-S" || os.Args[1] == "--S" || os.Args[1] == "--search" || os.Args[1] == "-search"  {
 			search = strings.Join(os.Args[2:], " ")
+
+			if strings.Contains(search, "http") {
+				log.Fatalf("It Looks Like You Are Trying to Install a Mod via Link! Run the command:\n                                modworkshop-dl -I %s", search)
+			}
 			searchForMod(search, c)
 		}
-
 		if file != "" {
 			downloadFromFile(c)
 		}
-
 		if install != "" {
 			installMod(install, c)
 		}
-
 		if help == true {
 			fmt.Printf(helpMsg)
 		}
@@ -349,8 +359,6 @@ func searchForMod(query string, c *colly.Collector) {
 
 	responseData, err := ioutil.ReadAll(res.Body)
 	json.Unmarshal(responseData, &modResponseObject)
-
-	// Print Stuff to Out
 
 	if len(modResponseObject.Content) > 0 {
 		for i := 0; i < len(modResponseObject.Content); i++ {
@@ -385,7 +393,7 @@ func searchForMod(query string, c *colly.Collector) {
 		downloadModFromIndex(modChoice, c)
 
 	} else {
-		fmt.Println("No mods found")
+		log.Fatalf("No Mods Found for Query: (%s) ", query)
 	}
 }
 
@@ -407,6 +415,7 @@ func downloadModFromLink(link string, c *colly.Collector, destination string) er
 	if err != nil {
 		return err
 	}
+
 	unzipFile(resp.Filename, destination)
 	os.Remove(resp.Filename)
 	return nil
@@ -440,7 +449,7 @@ func downloadModFromIndex(index int, c *colly.Collector) {
 
 func installMod(mod string, c *colly.Collector) {
 	if strings.Contains(mod, "http") {
-		downloadModFromLink(mod, c, modsDirectory)
+		downloadModFromLink(mod, c, ".")
 		return
 	}
 
@@ -460,7 +469,7 @@ func ensureDir(dirPath string) error {
 	} else {
 		if err != nil {
 			log.Fatalf("There was an error ensuring that %s exists! %s\n", dirPath, err)
-			return errors.New("The Directory Could Not Be Created!")
+			return fmt.Errorf("The Directory (%s) Could Not Be Created!", dirPath)
 		}
 		return nil
 	}
