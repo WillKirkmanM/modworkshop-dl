@@ -5,6 +5,19 @@
 
 ## ℹ A Command-Line Utility Tool for Installing Mods from [Mod Workshop](https://modworkshop.net/)
 
+## Install (Conventional)
+```sh
+mkdir "C:\Program Files (x86)\Modworkshop-DL"
+setx PATH "C:\Program Files (x86)\Modworkshop-DL;%PATH%"
+curl https://github.com/WillKirkmanM/modworkshop-dl/releases/download/v1.3.0/modworkshop-dl.exe -o "C:\Program Files (x86)\Modworkshop-DL\modworkshop-dl.exe"
+powershell
+```
+
+## Install (One Liner)
+```sh
+mkdir "C:\Program Files (x86)\Modworkshop-DL";setx PATH "C:\Program Files (x86)\Modworkshop-DL;%PATH%";curl https://github.com/WillKirkmanM/modworkshop-dl/releases/download/v1.3.0/modworkshop-dl.exe -o "C:\Program Files (x86)\Modworkshop-DL\modworkshop-dl.exe";echo "";echo "Installed! Run the Command 'modworkshop-dl --help'";echo "";echo "Restarting Terminal";echo "";powershell
+```
+
 ### Get Started
 #### Install via Searching
 1. Run the tool with the `search` flag followed by your query
