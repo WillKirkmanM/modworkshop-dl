@@ -26,6 +26,8 @@ import (
 	"github.com/mholt/archiver/v3"
 )
 
+var version string = "1.3.0"
+
 var baseURL string = "modworkshop.net"
 var apiURL string = "https://modworkshop.net/api/files/"
 var modsDirectory string = "."
@@ -37,6 +39,8 @@ var file string
 var search string
 var help bool
 var install string
+var displayVersion bool
+var update bool
 
 type Mod struct {
 	Did                  int         `json:"did"`
@@ -67,6 +71,7 @@ type Mod struct {
 	UsesDefaultThumbnail interface{} `json:"uses_default_thumbnail"`
 }
 
+var modResponseObject Response
 type Response struct {
 	Success int    `json:"success"`
 	Cache   string `json:"cache"`
@@ -120,8 +125,6 @@ var games = map[string]string{
 	"Skyrim Special Edition":                          ".",
 	"Forspoken":                                       ".",
 }
-
-var modResponseObject Response
 
 func main() {
 	c := colly.NewCollector(
@@ -237,7 +240,7 @@ func parseText(filePath string) (modsArray []string, assetsArray []string, error
 	}
 	return modsArray, assetsArray, nil
 	}
-	return nil, nil, fmt.Errorf("The File %s Does Not Exist!", filePath) 
+	return nil, nil, fmt.Errorf("The File %s Does Not Exist", filePath) 
 }
 
 func doesExist(filePath string) bool {
@@ -285,33 +288,41 @@ func unzipFile(file string, destination string) {
 		if err != nil {
 			log.Fatalf("There was an error while unzipping the Zip File %s", err)
 		}
-		break
 	case "tar":
 		err := archiver.DefaultTar.Unarchive(file, destination)
 		if err != nil {
 			log.Fatalf("There was an error while unzipping the Tar File %s", err)
 		}
-		break
 	case "rar":
 		err := archiver.DefaultRar.Unarchive(file, destination)
 		if err != nil {
 			log.Fatalf("There was an error while unzipping the Rar File %s", err)
 		}
-		break
 	}
 }
 
 func parseCliArgs(c *colly.Collector) {
 	flag.StringVar(&file, "file", "", "The text file containing the mods.")
 	flag.StringVar(&file, "f", "", "The text file containing the mods.")
+
 	flag.StringVar(&search, "search", "", "The Mod To Search.")
 	flag.StringVar(&search, "S", "", "The Mod To Search")
-	flag.BoolVar(&help, "h", false, "View all Commands.")
-	flag.BoolVar(&help, "help", false, "View all Commands.")
-	flag.StringVar(&install, "I", "", "The Mod To Install")
+
 	flag.StringVar(&install, "install", "", "The Mod To Install")
+	flag.StringVar(&install, "I", "", "The Mod To Install")
+
+	flag.BoolVar(&help, "help", false, "View all Commands.")
+	flag.BoolVar(&help, "h", false, "View all Commands.")
+
+	flag.BoolVar(&displayVersion, "version", false, "Display Version")
+	flag.BoolVar(&displayVersion, "v", false, "Display Version")
+
+	flag.BoolVar(&update, "update", false, "Update Modworkshop-DL")
+	flag.BoolVar(&update, "u", false, "Update Modworkshop-DL")
+
 	flag.Parse()
 
+	// Dear Future Will, Hey! I'm from the past; you are most likely going to tab them all inline because that is just you but here to ruin the fun and say don't bother. Kindest Regards, Past Will 04/03/2023
 	helpMsg :=
 		`
 Modworkshop-dl allows for installing mods with ease.
@@ -319,9 +330,12 @@ Modworkshop-dl allows for installing mods with ease.
 usage: modworkshop-dl [<command>] [<argument>]
 
 The following commands are available:
-search, S			The mod to search 				[-S <Name>]
+search, S			The mod to search				[-S <Name>]
 file, f				The text file containing the mods		[-f <File>]
 install, I			The Link / ModID To Be Installed		[-I <Link / ModID>]	
+help, h				Display this Help Message			[-h]		
+version, v			Display the Current Version			[-v]
+update, u			Update Modworkshop-DL				[-u]
 		`
 
 	if len(os.Args) > 1 {
@@ -343,8 +357,14 @@ install, I			The Link / ModID To Be Installed		[-I <Link / ModID>]
 		if install != "" {
 			installMod(install, c)
 		}
-		if help == true {
-			fmt.Printf(helpMsg)
+		if help {
+			fmt.Println(helpMsg)
+		}
+		if displayVersion {
+			showVersion()
+		}
+		if update {
+			updateProgram()
 		}
 	} else {
 		fmt.Println(helpMsg)
@@ -429,7 +449,6 @@ func downloadModFromIndex(index int, c *colly.Collector) {
 		log.Fatalf("The index %d is out the bounds! Select a Mod Provided", index)
 	}
 
-	title := modResponseObject.Content[index].Name
 	downloadLink := "https://modworkshop.net/mod/" + strconv.Itoa(modResponseObject.Content[index].Did)
 
 	title, downloadID := getModInformation(c, downloadLink)
@@ -480,4 +499,55 @@ func ensureDir(dirPath string) error {
 	}
 	ensureDir(dirPath)
 	return nil
+}
+
+func showVersion() {
+	fmt.Println("v" + version)
+}
+
+func updateProgram() {
+	baseUrl := "https://willkirkmanm.github.io/modworkshop-dl/index.json"
+
+	type apiResponse struct {
+		Version string `json:"version"`
+	}
+	var apiRes apiResponse
+
+	fmt.Println("Checking Latest Version...")
+	res, err := http.Get(baseUrl)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	responseData, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	json.Unmarshal(responseData, &apiRes)
+
+	if version == apiRes.Version {
+		fmt.Printf("You are already on the latest version (%s)", version)
+	} else {
+		fmt.Println("New Version Available! Update? (Y/n)")
+		fmt.Println("Make sure you are running on an elevated shell")
+
+		update := ""
+
+		fmt.Scanln(&update)
+
+		if update == "Y" || update == "y" {
+			path := `C:\Program Files (x86)\Modworkshop-DL`
+			downloadURL := fmt.Sprintf("https://github.com/WillKirkmanM/modworkshop-dl/releases/download/v%s/modworkshop-dl.exe", version) // CHange version to apiRes
+	
+			grab.Get(path + `\modworkshop-dl-tmp.exe`, downloadURL)
+			
+			os.Remove(path + `\modworkshop-dl.exe`)
+			os.Rename(path + `\modworkshop-dl-tmp.exe`, path + `\modworkshop-dl.exe`)
+			fmt.Printf("Successfully Updated to Version (%s)", apiRes.Version)
+				
+		} else {
+			fmt.Println("Got it! Exiting...")
+			os.Exit(0)
+		}
+	}
 }
