@@ -13,7 +13,7 @@ curl https://github.com/WillKirkmanM/modworkshop-dl/releases/download/v1.3.0/mod
 powershell
 ```
 
-## Install (One Liner)
+## Install (One-Liner)
 ```sh
 mkdir "C:\Program Files (x86)\Modworkshop-DL";setx PATH "C:\Program Files (x86)\Modworkshop-DL;%PATH%";curl https://github.com/WillKirkmanM/modworkshop-dl/releases/download/v1.3.0/modworkshop-dl.exe -o "C:\Program Files (x86)\Modworkshop-DL\modworkshop-dl.exe";echo "";echo "Installed! Run the Command 'modworkshop-dl --help'";echo "";echo "Restarting Terminal";echo "";powershell
 ```
@@ -25,7 +25,7 @@ mkdir "C:\Program Files (x86)\Modworkshop-DL";setx PATH "C:\Program Files (x86)\
 $ modworkshop-dl --search low violence mode
 ```
 <p align=center>
-  <img src="./Assets/LowViolenceModeSearchImage.png" />
+  <img src="https://raw.githubusercontent.com/WillKirkmanM/modworkshop-dl/assets/Images/LowViolenceModeSearchImage.png" />
 </p>
 
 2. From the list of mods returned, write the index of the mod you would like to download (The mod will now be downloaded into your mods folder)
