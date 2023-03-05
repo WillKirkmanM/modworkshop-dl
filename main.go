@@ -537,7 +537,7 @@ func updateProgram() {
 
 		if update == "Y" || update == "y" {
 			path := `C:\Program Files (x86)\Modworkshop-DL`
-			downloadURL := fmt.Sprintf("https://github.com/WillKirkmanM/modworkshop-dl/releases/download/v%s/modworkshop-dl.exe", version) // CHange version to apiRes
+			downloadURL := fmt.Sprintf("https://github.com/WillKirkmanM/modworkshop-dl/releases/download/v%s/modworkshop-dl.exe", apiRes)
 	
 			grab.Get(path + `\modworkshop-dl-tmp.exe`, downloadURL)
 			
