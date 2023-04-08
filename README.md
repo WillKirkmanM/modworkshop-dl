@@ -9,13 +9,13 @@
 ```sh
 mkdir "C:\Program Files (x86)\Modworkshop-DL"
 setx PATH "C:\Program Files (x86)\Modworkshop-DL;%PATH%"
-curl https://github.com/WillKirkmanM/modworkshop-dl/releases/download/v1.4.0/modworkshop-dl.exe -o "C:\Program Files (x86)\Modworkshop-DL\modworkshop-dl.exe"
+curl https://github.com/WillKirkmanM/modworkshop-dl/releases/download/v1.5.0/modworkshop-dl.exe -o "C:\Program Files (x86)\Modworkshop-DL\modworkshop-dl.exe"
 powershell
 ```
 
 ## Install (One-Liner)
 ```sh
-mkdir "C:\Program Files (x86)\Modworkshop-DL";setx PATH "C:\Program Files (x86)\Modworkshop-DL;%PATH%";curl https://github.com/WillKirkmanM/modworkshop-dl/releases/download/v1.4.0/modworkshop-dl.exe -o "C:\Program Files (x86)\Modworkshop-DL\modworkshop-dl.exe";echo "";echo "Installed! Run the Command 'modworkshop-dl --help'";echo "";echo "Restarting Terminal";echo "";powershell
+mkdir "C:\Program Files (x86)\Modworkshop-DL";setx PATH "C:\Program Files (x86)\Modworkshop-DL;%PATH%";curl https://github.com/WillKirkmanM/modworkshop-dl/releases/download/v1.5.0/modworkshop-dl.exe -o "C:\Program Files (x86)\Modworkshop-DL\modworkshop-dl.exe";echo "";echo "Installed! Run the Command 'modworkshop-dl --help'";echo "";echo "Restarting Terminal";echo "";powershell
 ```
 
 ### Get Started
