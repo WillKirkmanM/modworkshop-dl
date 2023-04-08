@@ -41,6 +41,7 @@ var help bool
 var install string
 var displayVersion bool
 var update bool
+var installSBLT bool
 
 type Mod struct {
 	Did                  int         `json:"did"`
@@ -320,6 +321,9 @@ func parseCliArgs(c *colly.Collector) {
 	flag.BoolVar(&update, "update", false, "Update Modworkshop-DL")
 	flag.BoolVar(&update, "u", false, "Update Modworkshop-DL")
 
+	flag.BoolVar(&installSBLT, "installSBLT", false, "Install SuperBLT")
+	flag.BoolVar(&installSBLT, "is", false, "Install SuperBLT")
+
 	flag.Parse()
 
 	// Dear Future Will, Hey! I'm from the past; you are most likely going to tab them all inline because that is just you but here to ruin the fun and say don't bother. Kindest Regards, Past Will 04/03/2023
@@ -336,6 +340,7 @@ install, I			The Link / ModID To Be Installed		[-I <Link / ModID>]
 help, h				Display this Help Message			[-h]		
 version, v			Display the Current Version			[-v]
 update, u			Update Modworkshop-DL				[-u]
+installSBLT, is			Install SuperBLT				[-is]
 		`
 
 	if len(os.Args) > 1 {
@@ -365,6 +370,9 @@ update, u			Update Modworkshop-DL				[-u]
 		}
 		if update {
 			updateProgram()
+		}
+		if installSBLT {
+			installSuperBLT()
 		}
 	} else {
 		fmt.Println(helpMsg)
@@ -549,5 +557,50 @@ func updateProgram() {
 			fmt.Println("Got it! Exiting...")
 			os.Exit(0)
 		}
+	}
+}
+
+func installSuperBLT() {
+	url := "https://sblt-update.znix.xyz/pd2update/download/get.php?src=homepage&id=payday2bltwsockdll"
+	installPath := `C:\Program Files (x86)\Steam\SteamApps\common\PAYDAY 2\`
+	dllName := "WSOCK32.dll"
+	dllPath := fmt.Sprintf("%s%s", installPath, dllName) 
+
+	if _, err := os.Stat(dllPath); os.IsNotExist(err) {
+		writer := uilive.New()
+		writer.Start()
+
+		resp, err := grab.Get(installPath, url)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+
+		t := time.NewTicker(500 * time.Millisecond)
+		defer t.Stop()
+
+		writer.Stop()
+		Loop:
+		for {
+			select {
+			case <-t.C:
+				fmt.Fprintf(writer, "Downloading: %v / %v bytes (%.2f%%)\n",
+					resp.BytesComplete(),
+					resp.Size(),
+					100*resp.Progress())
+
+			case <-resp.Done:
+				break Loop
+			}
+		}
+
+		unzipFile(resp.Filename, installPath)
+		os.Remove(resp.Filename)
+
+		fmt.Println("SuperBLT has Successfully Been installed")
+
+	} else {
+		fmt.Println("You Already have SuperBLT Installed!")
+		os.Exit(0)
 	}
 }
