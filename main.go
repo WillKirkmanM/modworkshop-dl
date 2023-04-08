@@ -26,7 +26,7 @@ import (
 	"github.com/mholt/archiver/v3"
 )
 
-var version string = "1.4.0"
+var version string = "1.5.0"
 
 var baseURL string = "modworkshop.net"
 var apiURL string = "https://modworkshop.net/api/files/"
