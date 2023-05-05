@@ -72,7 +72,11 @@ usage: modworkshop-dl [<command>] [<argument>]
 The following commands are available:
 search, S                       The mod to search                               [-S <Name>]
 file, f                         The text file containing the mods               [-f <File>]
-install, I			            The Link / ModID To Be Installed		        [-I <Link / ModID>]	
+install, I                      The Link / ModID To Be Installed                [-I <Link / ModID>]
+help, h                         Display this Help Message                       [-h]
+version, v                      Display the Current Version                     [-v]
+update, u                       Update Modworkshop-DL                           [-u]
+installSBLT, is                 Install SuperBLT                                [-is]
 ```
 
 ### Supported Games
