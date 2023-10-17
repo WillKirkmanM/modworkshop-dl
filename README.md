@@ -5,6 +5,9 @@
 
 ## ℹ A Command-Line Utility Tool for Installing Mods from [Mod Workshop](https://modworkshop.net/)
 
+# ⚠ Migration to a new Version ⚠
+With the new addition of the [Modworkshop.net API](https://modworkshop.net/api/). I am in the process of cleaning up the code to implement these new additions (removes the tedious web scraping, YES!). This will be in the form of a version 2. View the [Development Branch Here](https://github.com/WillKirkmanM/modworkshop-dl/tree/v2)
+
 ## Install (Conventional)
 ```sh
 mkdir "C:\Program Files (x86)\Modworkshop-DL"
