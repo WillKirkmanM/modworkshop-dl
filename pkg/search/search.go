@@ -7,6 +7,9 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"os"
+
+	"github.com/WillKirkmanM/modworkshop-dl/pkg/error"
 )
 
 type SearchResponse struct {
@@ -101,28 +104,27 @@ type SearchResponse struct {
 	} `json:"meta"`
 }
 
-func Search(args []string) {
+func Search(args []string) SearchResponse {
 	query := strings.Join(args, "%20")
 	
 	searchURL := fmt.Sprintf("https://modworkshop.net/api/mods?limit=10&sort=views&query=%v", query) 
-	fmt.Println(searchURL)
+	fmt.Println("SEARCH URL: ", searchURL)
 
 	res, err := http.Get(searchURL)
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
-	}
+	if err != nil { error.Error(err) }
 
 	var searchData SearchResponse
 
 	responseData, err := io.ReadAll(res.Body)
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
-	}
+	if err != nil { error.Error(err) }
+
 
 	json.Unmarshal(responseData, &searchData)
 
-	fmt.Println(string(responseData))
+	if searchData.Meta.Total == 0 {
+		fmt.Println("No Mods Found!")
+		os.Exit(1)
+	}
 
+	return searchData
 }
