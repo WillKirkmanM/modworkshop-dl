@@ -102,15 +102,8 @@ type SearchResponse struct {
 }
 
 func Search(args []string) {
-	var query string
-
-	for i := 0; i < len(args); i++ {
-		query = query + args[i] + " "
-	}
-
-	query = strings.TrimSuffix(query, " ")
-	query = strings.ReplaceAll(query, " ", "%20")
-
+	query := strings.Join(args, "%20")
+	
 	searchURL := fmt.Sprintf("https://modworkshop.net/api/mods?limit=10&sort=views&query=%v", query) 
 	fmt.Println(searchURL)
 
